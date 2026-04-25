@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tigrinho Bets</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07);
+    --accent: #7c6cfa;
+    --accent2: #fa6c6c;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #f0f0f8;
+    --muted: #6b6b85;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+
+  .login-logo {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .login-sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+  }
+
+  .login-card input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 1rem;
+    padding: 0.85rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .login-card input:focus {
+    border-color: var(--accent);
+  }
+
+  .login-card button {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .login-card button:hover { opacity: 0.9; }
+  .login-card button:active { transform: scale(0.98); }
+
+  .login-error {
+    color: var(--red);
+    font-size: 0.82rem;
+    margin-top: 0.75rem;
+    min-height: 1.2em;
+  }
+
+  /* ── SETUP WARNING ── */
+  .setup-box {
+    background: rgba(124,108,250,0.08);
+    border: 1px solid rgba(124,108,250,0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    text-align: left;
+    line-height: 1.6;
+  }
+
+  .setup-box strong { color: var(--accent); }
+  .setup-box code {
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.78rem;
+    color: #b0a8ff;
+  }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display: none; }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+
+  .last-update {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .btn-refresh {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    transition: border-color 0.2s;
+  }
+  .btn-refresh:hover { border-color: var(--accent); }
+
+  .btn-logout {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+  .btn-logout:hover { color: var(--red); }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* ── LOADING ── */
+  .loading {
+    text-align: center;
+    padding: 4rem;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .kpi-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .kpi-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+  .neutral  { color: var(--text); }
+
+  /* ── SECTION ── */
+  .section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
+
+  /* ── CHART CARDS ── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 700px) {
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* ── TABLE ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .table-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  thead th {
+    padding: 0.6rem 1.25rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  td {
+    padding: 0.7rem 1.25rem;
+    vertical-align: middle;
+  }
+
+  .badge {
+    display: inline-block;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-pend  { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  /* ── GRUPOS ── */
+  .grupos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .grupo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .grupo-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .grupo-tipo { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+  .grupo-lucro { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+
+  /* ── SALDOS ── */
+  .saldos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .saldo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .saldo-casa { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
+  .saldo-row  { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem; color: var(--muted); }
+  .saldo-row span:last-child { color: var(--text); font-weight: 500; }
+  .saldo-total { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; }
+
+  /* ── NO DATA ── */
+  .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    header { padding: 1rem; }
+    main { padding: 1rem; }
+    .kpi-value { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🐯</div>
+    <div class="login-title">Tigrinho Bets</div>
+    <div class="login-sub">Dashboard de apostas</div>
+
+    <input type="password" id="pwd-input" placeholder="••••••••" autocomplete="off" />
+    <button onclick="tryLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+
+    <div class="setup-box">
+      <strong>⚙️ Configuração necessária</strong><br><br>
+      Antes de publicar, edite este arquivo e defina:<br><br>
+      1. <code>PASSWORD_HASH</code> — hash SHA-256 da sua senha<br>
+      2. <code>SHEET_ID</code> — ID da sua planilha Google<br><br>
+      Gere o hash em: <code>emn.tools/sha256</code><br>
+      O ID está na URL do Sheets após <code>/d/</code>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+  <header>
+    <div class="logo">🐯 <span>Tigrinho</span> Bets</div>
+    <div class="header-right">
+      <span class="last-update" id="last-update">—</span>
+      <button class="btn-refresh" onclick="loadData()">↻ Atualizar</button>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="content">
+      <div class="loading">
+        <div class="spinner"></div>
+        Carregando dados...
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIGURAÇÃO — edite antes de publicar
+// ════════════════════════════════════════════
+const CONFIG = {
+  // Cole aqui o hash SHA-256 da sua senha
+  // Gere em: https://emn178.github.io/online-tools/sha256.html
+  PASSWORD_HASH: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+
+  // ID da sua planilha Google Sheets (da URL)
+  SHEET_ID: 'e/2PACX-1vQrGUh-CZl9ht7YkQ-jf-pAApmXm_4-uV1wqPgf24q32thnBLKiQ4DAnGNU_WmDFHu8VC12Bz9yDkMq/pub?output=csv',
+
+  // Nomes exatos das abas
+  ABAS: {
+    overview: 'Overview',
+    apostas:  'Apostas',
+    grupos:   'Grupos',
+    saldos:   'Saldos',
+  }
+};
+// ════════════════════════════════════════════
+
+// ── AUTH ──
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryLogin() {
+  const val = document.getElementById('pwd-input').value;
+  const hash = await sha256(val);
+  if (hash === CONFIG.PASSWORD_HASH) {
+    sessionStorage.setItem('auth', hash);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('login-error').textContent = 'Senha incorreta.';
+    document.getElementById('pwd-input').value = '';
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+function logout() {
+  sessionStorage.removeItem('auth');
+  location.reload();
+}
+
+// Verifica sessão ao carregar
+if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH && CONFIG.PASSWORD_HASH !== 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+// ── SHEETS CSV ──
+function sheetUrl(aba) {
+  return `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(aba)}`;
+}
+
+async function fetchSheet(aba) {
+  const r = await fetch(sheetUrl(aba));
+  const txt = await r.text();
+  return parseCSV(txt);
+}
+
+function parseCSV(txt) {
+  return txt.trim().split('\n').map(line => {
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
+      cur += c;
+    }
+    cols.push(cur.trim());
+    return cols;
+  });
+}
+
+function toNum(s) {
+  if (!s) return 0;
+  return parseFloat(s.replace(/[R$\s.]/g,'').replace(',','.')) || 0;
+}
+
+function fmtBRL(n) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+}
+
+function fmtPct(n) {
+  return (n * 100).toFixed(2) + '%';
+}
+
+// ── LOAD DATA ──
+async function loadData() {
+  document.getElementById('content').innerHTML = `
+    <div class="loading"><div class="spinner"></div>Carregando dados...</div>`;
+
+  try {
+    const [overview, apostas, grupos, saldos] = await Promise.all([
+      fetchSheet(CONFIG.ABAS.overview),
+      fetchSheet(CONFIG.ABAS.apostas),
+      fetchSheet(CONFIG.ABAS.grupos),
+      fetchSheet(CONFIG.ABAS.saldos),
+    ]);
+
+    renderDashboard(overview, apostas, grupos, saldos);
+    document.getElementById('last-update').textContent =
+      'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
+
+  } catch(e) {
+    document.getElementById('content').innerHTML = `
+      <div class="no-data">
+        ⚠️ Erro ao carregar dados.<br><br>
+        Verifique se o SHEET_ID está correto e se a planilha está publicada.<br>
+        <small style="color:#555">${e.message}</small>
+      </div>`;
+  }
+}
+
+// ── RENDER ──
+function renderDashboard(overview, apostas, grupos, saldos) {
+  // Lê KPIs do Overview (linhas 1-3, colunas A-D)
+  const bancaInicial = toNum(overview[0]?.[1]);
+  const unidade      = toNum(overview[0]?.[3]);
+  const totalApostado = toNum(overview[1]?.[1]);
+  const lucroTotal   = toNum(overview[1]?.[3]);
+  const bancaAtual   = toNum(overview[2]?.[1]);
+  const roi          = toNum(overview[2]?.[3]);
+
+  // Meses (linhas 5-16, índices 5..16)
+  const meses = [];
+  for (let i = 5; i <= 16; i++) {
+    const row = overview[i];
+    if (!row || !row[0]) continue;
+    meses.push({
+      nome:      row[0],
+      apostas:   toNum(row[1]),
+      apostado:  toNum(row[2]),
+      lucro:     toNum(row[3]),
+      roi:       toNum(row[4]),
+    });
+  }
+
+  // Apostas recentes (últimas 10 com dados)
+  const apostasRows = apostas.slice(1).filter(r => r[1] && r[1].length > 2).slice(-10).reverse();
+
+  // Grupos
+  const gruposRows = grupos.slice(3).filter(r => r[0]);
+
+  // Saldos resumo (colunas F-J = índices 5-9)
+  const saldosRows = saldos.slice(2).filter(r => r[5] && r[5].length > 1);
+
+  // ── HTML ──
+  const lucroColor = lucroTotal >= 0 ? 'positive' : 'negative';
+  const roiColor   = roi >= 0 ? 'positive' : 'negative';
+
+  let html = `
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Banca Inicial</div>
+        <div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div>
+        <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Banca Atual</div>
+        <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
+        <div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Lucro Total</div>
+        <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
+        <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Apostado</div>
+        <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
+        <div class="kpi-sub">${apostasRows.length} apostas recentes</div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="section-title">Evolução mensal</div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Lucro por mês (R$)</div>
+        <div class="chart-wrap">
+          <canvas id="chartMensal" role="img" aria-label="Lucro mensal em barras"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Apostas por mês</div>
+        <div class="chart-wrap">
+          <canvas id="chartApostas" role="img" aria-label="Quantidade de apostas por mês"></canvas>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Grupos
+  if (gruposRows.length) {
+    html += `<div class="section-title">Grupos</div><div class="grupos-grid">`;
+    gruposRows.forEach(r => {
+      const lucro = toNum(r[3]);
+      const cl = lucro >= 0 ? 'positive' : 'negative';
+      html += `
+        <div class="grupo-card">
+          <div class="grupo-name">${r[0]}</div>
+          <div class="grupo-tipo">${r[1]}</div>
+          <div class="grupo-lucro ${cl}">${fmtBRL(lucro)}</div>
+          <div class="kpi-sub" style="margin-top:0.3rem">${r[2]} apostas</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Saldos
+  if (saldosRows.length) {
+    html += `<div class="section-title">Saldos por casa</div><div class="saldos-grid">`;
+    saldosRows.forEach(r => {
+      const dep   = toNum(r[6]);
+      const sac   = toNum(r[7]);
+      const lucro = toNum(r[8]);
+      const saldo = toNum(r[9]);
+      const cl    = saldo >= 0 ? 'positive' : 'negative';
+      html += `
+        <div class="saldo-card">
+          <div class="saldo-casa">${r[5]}</div>
+          <div class="saldo-row"><span>Depositado</span><span>${fmtBRL(dep)}</span></div>
+          <div class="saldo-row"><span>Sacado</span><span>${fmtBRL(sac)}</span></div>
+          <div class="saldo-row"><span>Lucro apostas</span><span class="${lucro>=0?'positive':'negative'}">${fmtBRL(lucro)}</span></div>
+          <div class="saldo-total"><span>Saldo estimado</span><span class="${cl}">${fmtBRL(saldo)}</span></div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Apostas recentes
+  html += `
+    <div class="section-title">Apostas recentes</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Esporte</th>
+            <th>Casa</th>
+            <th>Grupo</th>
+            <th>Odd</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Lucro</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  if (apostasRows.length === 0) {
+    html += `<tr><td colspan="8" class="no-data">Nenhuma aposta registrada ainda.</td></tr>`;
+  } else {
+    apostasRows.forEach(r => {
+      // Apostas: A=ID B=Data C=Esporte D=Casa E=Aposta F=Grupo G=Tipo H=OddAnunc I=OddLanc J=Valor K=Status L=Lucro
+      const data    = r[1] || '';
+      const esporte = r[2] || '';
+      const casa    = r[3] || '';
+      const grupo   = r[5] || '';
+      const odd     = r[8] || r[7] || '—'; // Odd Lançada ou Anunciada
+      const valor   = toNum(r[9]);
+      const status  = (r[10] || '').toLowerCase();
+      const lucro   = toNum(r[11]);
+
+      let badge = `<span class="badge badge-pend">Pendente</span>`;
+      if (status === 'green') badge = `<span class="badge badge-green">✓ Green</span>`;
+      if (status === 'red')   badge = `<span class="badge badge-red">✗ Red</span>`;
+
+      const lucroColor = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
+
+      html += `
+        <tr>
+          <td>${data}</td>
+          <td>${esporte}</td>
+          <td>${casa}</td>
+          <td>${grupo}</td>
+          <td>${odd}</td>
+          <td>${fmtBRL(valor)}</td>
+          <td>${badge}</td>
+          <td class="${lucroColor}">${lucro !== 0 ? fmtBRL(lucro) : '—'}</td>
+        </tr>`;
+    });
+  }
+
+  html += `</tbody></table></div>`;
+  document.getElementById('content').innerHTML = html;
+
+  // ── CHARTS ──
+  const mesesLabels  = meses.map(m => m.nome.substring(0,3));
+  const mesesLucros  = meses.map(m => m.lucro);
+  const mesesApostas = meses.map(m => m.apostas);
+
+  new Chart(document.getElementById('chartMensal'), {
+    type: 'bar',
+    data: {
+      labels: mesesLabels,
+      datasets: [{
+        data: mesesLucros,
+        backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'),
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b6b85', font: { size: 11 }, callback: v => 'R$' + v }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartApostas'), {
+    type: 'bar',
+    data: {
+      labels: mesesLabels,
+      datasets: [{
+        data: mesesApostas,
+        backgroundColor: 'rgba(124,108,250,0.6)',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
