@@ -498,16 +498,13 @@ if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH) {
 
 // ── SHEETS CSV ──
 function sheetUrl(aba) {
-  const base = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQrGUh-CZl9ht7YkQ-jf-pAApmXm_4-uV1wqPgf24q32thnBLKiQ4DAnGNU_WmDFHu8VC12Bz9yDkMq/pub';
-  const gids = { 'Overview': '835669662', 'Apostas': '537672123', 'Grupos': '1436649105', 'Saldos': '1656706850' };
-  const gid = gids[aba] || '0';
-  return base + '?gid=' + gid + '&single=true&output=csv';
+  return 'https://script.google.com/macros/s/AKfycbzT-XGSQKjdG-cSVMzNyxYrmDDUJEwyoiIgAzd2DX1OqL0AHIu86w692ZLjloccwMQE7Q/exec?sheet=' + encodeURIComponent(aba);
 }
 
 async function fetchSheet(aba) {
   const r = await fetch(sheetUrl(aba));
-  const txt = await r.text();
-  return parseCSV(txt);
+  const data = await r.json();
+  return data;
 }
 
 function parseCSV(txt) {
