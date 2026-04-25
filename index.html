@@ -498,7 +498,8 @@ if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH) {
 
 // ── SHEETS CSV ──
 function sheetUrl(aba) {
-  return `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(aba)}`;
+  const base = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQrGUh-CZl9ht7YkQ-jf-pAApmXm_4-uV1wqPgf24q32thnBLKiQ4DAnGNU_WmDFHu8VC12Bz9yDkMq/pub';
+  return base + '?gid=0&single=true&output=csv&sheet=' + encodeURIComponent(aba);
 }
 
 async function fetchSheet(aba) {
