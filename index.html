@@ -391,6 +391,58 @@
     main { padding: 1rem; }
     .kpi-value { font-size: 1.3rem; }
   }
+
+  /* ── GRUPO SEGMENTADO ── */
+  .grupo-segmento-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin: 0.75rem 0 0.5rem;
+    padding-left: 2px;
+    font-weight: 600;
+  }
+
+  /* ── FILTRO TABS ── */
+  .filtro-tabs { display: flex; gap: 6px; }
+  .filtro-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.75rem;
+    transition: all 0.15s;
+  }
+  .filtro-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filtro-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ── PAGINAÇÃO ── */
+  .paginacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .pag-info { font-size: 0.75rem; color: var(--muted); }
+  .pag-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pag-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    transition: all 0.15s;
+  }
+  .pag-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+  .pag-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
 </style>
 </head>
 <body>
@@ -563,45 +615,42 @@ async function loadData() {
   }
 }
 
+
+// ── ESTADO GLOBAL DE FILTROS E PAGINAÇÃO ──
+let _apostasAllRows = [];
+let _saldosAllRows  = [];
+let _saldosPagina   = 0;
+const SALDOS_POR_PAGINA = 6;
+
 // ── RENDER ──
 function renderDashboard(overview, apostas, grupos, saldos) {
-  // Lê KPIs do Overview (linhas 1-3, colunas A-D)
-  const bancaInicial = toNum(overview[0]?.[1]);
-  const unidade      = toNum(overview[0]?.[3]);
+  const bancaInicial  = toNum(overview[0]?.[1]);
+  const unidade       = toNum(overview[0]?.[3]);
   const totalApostado = toNum(overview[1]?.[1]);
-  const lucroTotal   = toNum(overview[1]?.[3]);
-  const bancaAtual   = toNum(overview[2]?.[1]);
-  const roi          = toNum(overview[2]?.[3]);
+  const lucroTotal    = toNum(overview[1]?.[3]);
+  const bancaAtual    = toNum(overview[2]?.[1]);
+  const roi           = toNum(overview[2]?.[3]);
 
-  // Meses (linhas 5-16, índices 5..16)
+  // Meses
   const meses = [];
   for (let i = 5; i <= 16; i++) {
     const row = overview[i];
     if (!row || !row[0]) continue;
-    meses.push({
-      nome:      row[0],
-      apostas:   toNum(row[1]),
-      apostado:  toNum(row[2]),
-      lucro:     toNum(row[3]),
-      roi:       toNum(row[4]),
-    });
+    meses.push({ nome: row[0], apostas: toNum(row[1]), apostado: toNum(row[2]), lucro: toNum(row[3]), roi: toNum(row[4]) });
   }
 
-  // Apostas recentes (últimas 10 com dados)
-  const apostasRows = apostas.slice(1).filter(r => r[1] && r[1].length > 2).slice(-10).reverse();
+  // Apostas — todas com dados
+  _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 2);
+  _saldosAllRows  = saldos.slice(2).filter(r => r[5] && String(r[5]).length > 1);
+  _saldosPagina   = 0;
 
-  // Grupos
-  const gruposRows = grupos.slice(3).filter(r => r[0]);
+  // Grupos separados por tipo
+  const gruposDesreg  = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Desreguladas'));
+  const gruposEsp     = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Especiais'));
 
-  // Saldos resumo (colunas F-J = índices 5-9)
-  const saldosRows = saldos.slice(2).filter(r => r[5] && r[5].length > 1);
-
-  // ── HTML ──
   const lucroColor = lucroTotal >= 0 ? 'positive' : 'negative';
-  const roiColor   = roi >= 0 ? 'positive' : 'negative';
 
   let html = `
-    <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi">
         <div class="kpi-label">Banca Inicial</div>
@@ -621,121 +670,69 @@ function renderDashboard(overview, apostas, grupos, saldos) {
       <div class="kpi">
         <div class="kpi-label">Total Apostado</div>
         <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
-        <div class="kpi-sub">${apostasRows.length} apostas recentes</div>
+        <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
       </div>
     </div>
 
-    <!-- GRÁFICOS -->
     <div class="section-title">Evolução mensal</div>
     <div class="chart-grid">
       <div class="card">
         <div class="card-title">Lucro por mês (R$)</div>
-        <div class="chart-wrap">
-          <canvas id="chartMensal" role="img" aria-label="Lucro mensal em barras"></canvas>
-        </div>
+        <div class="chart-wrap"><canvas id="chartMensal"></canvas></div>
       </div>
       <div class="card">
         <div class="card-title">Apostas por mês</div>
-        <div class="chart-wrap">
-          <canvas id="chartApostas" role="img" aria-label="Quantidade de apostas por mês"></canvas>
-        </div>
+        <div class="chart-wrap"><canvas id="chartApostas"></canvas></div>
+      </div>
+    </div>`;
+
+  // ── GRUPOS SEGMENTADOS ──
+  const renderGrupoCards = (rows) => rows.map(r => {
+    const lucro = toNum(r[3]);
+    const cl = lucro >= 0 ? 'positive' : 'negative';
+    return `<div class="grupo-card">
+      <div class="grupo-name">${r[0]}</div>
+      <div class="grupo-lucro ${cl}">${fmtBRL(lucro)}</div>
+      <div class="kpi-sub" style="margin-top:0.3rem">${r[2]} apostas</div>
+    </div>`;
+  }).join('');
+
+  if (gruposDesreg.length || gruposEsp.length) {
+    html += `<div class="section-title">Grupos</div>`;
+
+    if (gruposDesreg.length) {
+      html += `<div class="grupo-segmento-label">Odds Desreguladas</div>
+               <div class="grupos-grid">${renderGrupoCards(gruposDesreg)}</div>`;
+    }
+    if (gruposEsp.length) {
+      html += `<div class="grupo-segmento-label">Especiais</div>
+               <div class="grupos-grid">${renderGrupoCards(gruposEsp)}</div>`;
+    }
+  }
+
+  // ── SALDOS COM PAGINAÇÃO ──
+  html += `<div class="section-title">Saldos por casa</div>
+           <div id="saldos-container"></div>
+           <div class="paginacao" id="saldos-paginacao"></div>`;
+
+  // ── APOSTAS COM FILTRO ──
+  html += `
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Apostas recentes</span>
+      <div class="filtro-tabs" id="filtro-tabs">
+        <button class="filtro-btn active" onclick="filtrarApostas(15,this)">15 dias</button>
+        <button class="filtro-btn" onclick="filtrarApostas(30,this)">30 dias</button>
+        <button class="filtro-btn" onclick="filtrarApostas(90,this)">90 dias</button>
+        <button class="filtro-btn" onclick="filtrarApostas(0,this)">Todas</button>
       </div>
     </div>
-  `;
+    <div class="table-card"><div id="apostas-tabela"></div></div>`;
 
-  // Grupos
-  if (gruposRows.length) {
-    html += `<div class="section-title">Grupos</div><div class="grupos-grid">`;
-    gruposRows.forEach(r => {
-      const lucro = toNum(r[3]);
-      const cl = lucro >= 0 ? 'positive' : 'negative';
-      html += `
-        <div class="grupo-card">
-          <div class="grupo-name">${r[0]}</div>
-          <div class="grupo-tipo">${r[1]}</div>
-          <div class="grupo-lucro ${cl}">${fmtBRL(lucro)}</div>
-          <div class="kpi-sub" style="margin-top:0.3rem">${r[2]} apostas</div>
-        </div>`;
-    });
-    html += `</div>`;
-  }
-
-  // Saldos
-  if (saldosRows.length) {
-    html += `<div class="section-title">Saldos por casa</div><div class="saldos-grid">`;
-    saldosRows.forEach(r => {
-      const dep   = toNum(r[6]);
-      const sac   = toNum(r[7]);
-      const lucro = toNum(r[8]);
-      const saldo = toNum(r[9]);
-      const cl    = saldo >= 0 ? 'positive' : 'negative';
-      html += `
-        <div class="saldo-card">
-          <div class="saldo-casa">${r[5]}</div>
-          <div class="saldo-row"><span>Depositado</span><span>${fmtBRL(dep)}</span></div>
-          <div class="saldo-row"><span>Sacado</span><span>${fmtBRL(sac)}</span></div>
-          <div class="saldo-row"><span>Lucro apostas</span><span class="${lucro>=0?'positive':'negative'}">${fmtBRL(lucro)}</span></div>
-          <div class="saldo-total"><span>Saldo estimado</span><span class="${cl}">${fmtBRL(saldo)}</span></div>
-        </div>`;
-    });
-    html += `</div>`;
-  }
-
-  // Apostas recentes
-  html += `
-    <div class="section-title">Apostas recentes</div>
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Esporte</th>
-            <th>Casa</th>
-            <th>Grupo</th>
-            <th>Odd</th>
-            <th>Valor</th>
-            <th>Status</th>
-            <th>Lucro</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-  if (apostasRows.length === 0) {
-    html += `<tr><td colspan="8" class="no-data">Nenhuma aposta registrada ainda.</td></tr>`;
-  } else {
-    apostasRows.forEach(r => {
-      // Apostas: A=ID B=Data C=Esporte D=Casa E=Aposta F=Grupo G=Tipo H=OddAnunc I=OddLanc J=Valor K=Status L=Lucro
-      const data    = r[1] || '';
-      const esporte = r[2] || '';
-      const casa    = r[3] || '';
-      const grupo   = r[5] || '';
-      const odd     = r[8] || r[7] || '—'; // Odd Lançada ou Anunciada
-      const valor   = toNum(r[9]);
-      const status  = (r[10] || '').toLowerCase();
-      const lucro   = toNum(r[11]);
-
-      let badge = `<span class="badge badge-pend">Pendente</span>`;
-      if (status === 'green') badge = `<span class="badge badge-green">✓ Green</span>`;
-      if (status === 'red')   badge = `<span class="badge badge-red">✗ Red</span>`;
-
-      const lucroColor = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
-
-      html += `
-        <tr>
-          <td>${data}</td>
-          <td>${esporte}</td>
-          <td>${casa}</td>
-          <td>${grupo}</td>
-          <td>${odd}</td>
-          <td>${fmtBRL(valor)}</td>
-          <td>${badge}</td>
-          <td class="${lucroColor}">${lucro !== 0 ? fmtBRL(lucro) : '—'}</td>
-        </tr>`;
-    });
-  }
-
-  html += `</tbody></table></div>`;
   document.getElementById('content').innerHTML = html;
+
+  // Renderiza saldos e apostas via funções separadas
+  renderSaldos();
+  filtrarApostas(15, document.querySelector('.filtro-btn.active'));
 
   // ── CHARTS ──
   const mesesLabels  = meses.map(m => m.nome.substring(0,3));
@@ -744,17 +741,10 @@ function renderDashboard(overview, apostas, grupos, saldos) {
 
   new Chart(document.getElementById('chartMensal'), {
     type: 'bar',
-    data: {
-      labels: mesesLabels,
-      datasets: [{
-        data: mesesLucros,
-        backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'),
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
+    data: { labels: mesesLabels, datasets: [{ data: mesesLucros,
+      backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'),
+      borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
@@ -765,17 +755,9 @@ function renderDashboard(overview, apostas, grupos, saldos) {
 
   new Chart(document.getElementById('chartApostas'), {
     type: 'bar',
-    data: {
-      labels: mesesLabels,
-      datasets: [{
-        data: mesesApostas,
-        backgroundColor: 'rgba(124,108,250,0.6)',
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
+    data: { labels: mesesLabels, datasets: [{ data: mesesApostas,
+      backgroundColor: 'rgba(124,108,250,0.6)', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
@@ -783,6 +765,112 @@ function renderDashboard(overview, apostas, grupos, saldos) {
       }
     }
   });
+}
+
+// ── SALDOS COM PAGINAÇÃO ──
+function renderSaldos() {
+  const container  = document.getElementById('saldos-container');
+  const paginacao  = document.getElementById('saldos-paginacao');
+  if (!container) return;
+
+  const total   = _saldosAllRows.length;
+  const inicio  = _saldosPagina * SALDOS_POR_PAGINA;
+  const fim     = Math.min(inicio + SALDOS_POR_PAGINA, total);
+  const paginas = Math.ceil(total / SALDOS_POR_PAGINA);
+  const rows    = _saldosAllRows.slice(inicio, fim);
+
+  if (total === 0) {
+    container.innerHTML = '<div class="no-data">Nenhum saldo registrado.</div>';
+    paginacao.innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="saldos-grid">';
+  rows.forEach(r => {
+    const dep   = toNum(r[6]);
+    const sac   = toNum(r[7]);
+    const lucro = toNum(r[8]);
+    const saldo = toNum(r[9]);
+    const cl    = saldo >= 0 ? 'positive' : 'negative';
+    html += `<div class="saldo-card">
+      <div class="saldo-casa">${r[5]}</div>
+      <div class="saldo-row"><span>Depositado</span><span>${fmtBRL(dep)}</span></div>
+      <div class="saldo-row"><span>Sacado</span><span>${fmtBRL(sac)}</span></div>
+      <div class="saldo-row"><span>Lucro apostas</span><span class="${lucro>=0?'positive':'negative'}">${fmtBRL(lucro)}</span></div>
+      <div class="saldo-total"><span>Saldo estimado</span><span class="${cl}">${fmtBRL(saldo)}</span></div>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Paginação
+  if (paginas <= 1) { paginacao.innerHTML = ''; return; }
+  let pHtml = `<div class="pag-info">${inicio+1}–${fim} de ${total} casas</div><div class="pag-btns">`;
+  pHtml += `<button class="pag-btn" onclick="mudarPaginaSaldos(-1)" ${_saldosPagina===0?'disabled':''}>‹ Anterior</button>`;
+  for (let i = 0; i < paginas; i++) {
+    pHtml += `<button class="pag-btn ${i===_saldosPagina?'active':''}" onclick="mudarPaginaSaldos(${i}, true)">${i+1}</button>`;
+  }
+  pHtml += `<button class="pag-btn" onclick="mudarPaginaSaldos(1)" ${_saldosPagina===paginas-1?'disabled':''}>Próximo ›</button>`;
+  pHtml += '</div>';
+  paginacao.innerHTML = pHtml;
+}
+
+function mudarPaginaSaldos(val, absoluto) {
+  const paginas = Math.ceil(_saldosAllRows.length / SALDOS_POR_PAGINA);
+  _saldosPagina = absoluto ? val : Math.max(0, Math.min(paginas-1, _saldosPagina + val));
+  renderSaldos();
+}
+
+// ── APOSTAS COM FILTRO ──
+function filtrarApostas(dias, btn) {
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const agora = new Date();
+  const rows = dias === 0
+    ? _apostasAllRows
+    : _apostasAllRows.filter(r => {
+        const partes = String(r[1]).split('/');
+        if (partes.length < 3) return false;
+        const d = new Date(partes[2], partes[1]-1, partes[0]);
+        return (agora - d) / 86400000 <= dias;
+      });
+
+  const exibir = [...rows].reverse();
+
+  let html = `<table><thead><tr>
+    <th>Data</th><th>Esporte</th><th>Casa</th><th>Grupo</th>
+    <th>Odd</th><th>Valor</th><th>Status</th><th>Lucro</th>
+  </tr></thead><tbody>`;
+
+  if (exibir.length === 0) {
+    html += `<tr><td colspan="8" class="no-data">Nenhuma aposta neste período.</td></tr>`;
+  } else {
+    exibir.forEach(r => {
+      const data    = r[1] || '';
+      const esporte = r[2] || '';
+      const casa    = r[3] || '';
+      const grupo   = r[5] || '';
+      const odd     = r[8] || r[7] || '—';
+      const valor   = toNum(r[9]);
+      const status  = String(r[10] || '').toLowerCase();
+      const lucro   = toNum(r[11]);
+
+      let badge = `<span class="badge badge-pend">Pendente</span>`;
+      if (status === 'green') badge = `<span class="badge badge-green">✓ Green</span>`;
+      if (status === 'red')   badge = `<span class="badge badge-red">✗ Red</span>`;
+
+      const lc = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
+      html += `<tr>
+        <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td>
+        <td>${odd}</td><td>${fmtBRL(valor)}</td><td>${badge}</td>
+        <td class="${lc}">${lucro !== 0 ? fmtBRL(lucro) : '—'}</td>
+      </tr>`;
+    });
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('apostas-tabela').innerHTML = html;
 }
 </script>
 </body>
