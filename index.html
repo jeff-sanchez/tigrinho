@@ -523,8 +523,9 @@ function parseCSV(txt) {
 }
 
 function toNum(s) {
-  if (!s) return 0;
-  return parseFloat(s.replace(/[R$\s.]/g,'').replace(',','.')) || 0;
+  if (s === null || s === undefined || s === '') return 0;
+  if (typeof s === 'number') return s;
+  return parseFloat(String(s).replace(/[R$\s.]/g,'').replace(',','.')) || 0;
 }
 
 function fmtBRL(n) {
