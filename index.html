@@ -445,10 +445,10 @@
 const CONFIG = {
   // Cole aqui o hash SHA-256 da sua senha
   // Gere em: https://emn178.github.io/online-tools/sha256.html
-  PASSWORD_HASH: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  PASSWORD_HASH: '271c09ecbcc647270b0b8c933e3e21cfeda77956fba413ceef4acaa32c148a61',
 
   // ID da sua planilha Google Sheets (da URL)
-  SHEET_ID: 'e/2PACX-1vQrGUh-CZl9ht7YkQ-jf-pAApmXm_4-uV1wqPgf24q32thnBLKiQ4DAnGNU_WmDFHu8VC12Bz9yDkMq/pub?output=csv',
+  SHEET_ID: '1Hxj5cqvp72vtwp_czJuV5cpYteN2pOj5UVSHzlg-iHg',
 
   // Nomes exatos das abas
   ABAS: {
@@ -490,7 +490,7 @@ function logout() {
 }
 
 // Verifica sessão ao carregar
-if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH && CONFIG.PASSWORD_HASH !== 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') {
+if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadData();
