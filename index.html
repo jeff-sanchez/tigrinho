@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tigrinho Bets</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐯</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   /* ── RESET & BASE ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #0a0a0f;
     --surface: #111118;
@@ -22,7 +22,6 @@
     --muted: #6b6b85;
     --font: 'Inter', system-ui, sans-serif;
   }
-
   body {
     background: var(--bg);
     color: var(--text);
@@ -30,7 +29,6 @@
     min-height: 100vh;
     line-height: 1.5;
   }
-
   /* ── LOGIN ── */
   #login-screen {
     display: flex;
@@ -39,7 +37,6 @@
     min-height: 100vh;
     padding: 1rem;
   }
-
   .login-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -49,25 +46,9 @@
     max-width: 380px;
     text-align: center;
   }
-
-  .login-logo {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .login-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    letter-spacing: -0.02em;
-  }
-
-  .login-sub {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-bottom: 2rem;
-  }
-
+  .login-logo { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .login-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; letter-spacing: -0.02em; }
+  .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
   .login-card input {
     width: 100%;
     background: var(--surface2);
@@ -82,11 +63,7 @@
     letter-spacing: 0.1em;
     text-align: center;
   }
-
-  .login-card input:focus {
-    border-color: var(--accent);
-  }
-
+  .login-card input:focus { border-color: var(--accent); }
   .login-card button {
     width: 100%;
     background: var(--accent);
@@ -99,43 +76,11 @@
     cursor: pointer;
     transition: opacity 0.2s, transform 0.1s;
   }
-
   .login-card button:hover { opacity: 0.9; }
   .login-card button:active { transform: scale(0.98); }
-
-  .login-error {
-    color: var(--red);
-    font-size: 0.82rem;
-    margin-top: 0.75rem;
-    min-height: 1.2em;
-  }
-
-  /* ── SETUP WARNING ── */
-  .setup-box {
-    background: rgba(124,108,250,0.08);
-    border: 1px solid rgba(124,108,250,0.3);
-    border-radius: 10px;
-    padding: 1rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 1.5rem;
-    text-align: left;
-    line-height: 1.6;
-  }
-
-  .setup-box strong { color: var(--accent); }
-  .setup-box code {
-    background: var(--surface2);
-    padding: 1px 5px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 0.78rem;
-    color: #b0a8ff;
-  }
-
+  .login-error { color: var(--red); font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2em; }
   /* ── DASHBOARD ── */
   #dashboard { display: none; }
-
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -147,17 +92,10 @@
     top: 0;
     z-index: 100;
   }
-
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
-
   .header-right { display: flex; align-items: center; gap: 1rem; }
-
-  .last-update {
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-
+  .last-update { font-size: 0.75rem; color: var(--muted); }
   .btn-refresh {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -169,29 +107,11 @@
     transition: border-color 0.2s;
   }
   .btn-refresh:hover { border-color: var(--accent); }
-
-  .btn-logout {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 0.4rem;
-  }
+  .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.8rem; padding: 0.4rem; }
   .btn-logout:hover { color: var(--red); }
-
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
   /* ── LOADING ── */
-  .loading {
-    text-align: center;
-    padding: 4rem;
-    color: var(--muted);
-  }
+  .loading { text-align: center; padding: 4rem; color: var(--muted); }
   .spinner {
     width: 32px; height: 32px;
     border: 2px solid var(--border);
@@ -201,248 +121,67 @@
     margin: 0 auto 1rem;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   /* ── KPI CARDS ── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .kpi {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-  }
-
-  .kpi-label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 0.5rem;
-  }
-
-  .kpi-value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-
-  .kpi-sub {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 0.4rem;
-  }
-
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
+  .kpi-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .kpi-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; }
   .positive { color: var(--green); }
   .negative { color: var(--red); }
   .neutral  { color: var(--text); }
-
   /* ── SECTION ── */
-  .section-title {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    margin-top: 2rem;
-  }
-
+  .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
   /* ── CHART CARDS ── */
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  @media (max-width: 700px) {
-    .chart-grid { grid-template-columns: 1fr; }
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
-  .card-title {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 1.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
+  .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 700px) { .chart-grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+  .card-title { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.06em; }
   .chart-wrap { position: relative; height: 220px; }
-
   /* ── TABLE ── */
-  .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-  }
-
-  .table-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-  }
-
-  thead th {
-    padding: 0.6rem 1.25rem;
-    text-align: left;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    border-bottom: 1px solid var(--border);
-  }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th { padding: 0.6rem 1.25rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: var(--surface2); }
-
-  td {
-    padding: 0.7rem 1.25rem;
-    vertical-align: middle;
-  }
-
-  .badge {
-    display: inline-block;
-    border-radius: 6px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  td { padding: 0.7rem 1.25rem; vertical-align: middle; }
+  .badge { display: inline-block; border-radius: 6px; font-size: 0.68rem; font-weight: 600; padding: 0.2rem 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
   .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
   .badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
   .badge-pend  { background: rgba(255,255,255,0.06); color: var(--muted); }
-
   /* ── GRUPOS ── */
-  .grupos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .grupo-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-  }
-
+  .grupos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .grupo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .grupo-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.2rem; }
   .grupo-tipo { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
   .grupo-lucro { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-
+  /* ── GRUPO SEGMENTADO ── */
+  .grupo-segmento-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0.75rem 0 0.5rem; padding-left: 2px; font-weight: 600; }
   /* ── SALDOS ── */
-  .saldos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .saldo-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-  }
-
+  .saldos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 0.5rem; }
+  .saldo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .saldo-casa { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
   .saldo-row  { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem; color: var(--muted); }
   .saldo-row span:last-child { color: var(--text); font-weight: 500; }
   .saldo-total { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; }
-
-  /* ── NO DATA ── */
-  .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
-
-  /* ── MOBILE ── */
-  @media (max-width: 600px) {
-    header { padding: 1rem; }
-    main { padding: 1rem; }
-    .kpi-value { font-size: 1.3rem; }
-  }
-
-  /* ── GRUPO SEGMENTADO ── */
-  .grupo-segmento-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    margin: 0.75rem 0 0.5rem;
-    padding-left: 2px;
-    font-weight: 600;
-  }
-
-  /* ── FILTRO TABS ── */
-  .filtro-tabs { display: flex; gap: 6px; }
-  .filtro-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 0.75rem;
-    padding: 0.3rem 0.75rem;
-    transition: all 0.15s;
-  }
-  .filtro-btn:hover { border-color: var(--accent); color: var(--text); }
-  .filtro-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
   /* ── PAGINAÇÃO ── */
-  .paginacao {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+  .paginacao { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
   .pag-info { font-size: 0.75rem; color: var(--muted); }
   .pag-btns { display: flex; gap: 4px; flex-wrap: wrap; }
-  .pag-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
-    transition: all 0.15s;
-  }
+  .pag-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.6rem; transition: all 0.15s; }
   .pag-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
   .pag-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
+  /* ── FILTRO TABS ── */
+  .filtro-tabs { display: flex; gap: 6px; }
+  .filtro-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; }
+  .filtro-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filtro-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* ── NO DATA ── */
+  .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
+  /* ── MOBILE ── */
+  @media (max-width: 600px) { header { padding: 1rem; } main { padding: 1rem; } .kpi-value { font-size: 1.3rem; } }
 </style>
 </head>
 <body>
@@ -453,19 +192,9 @@
     <div class="login-logo">🐯</div>
     <div class="login-title">Tigrinho Bets</div>
     <div class="login-sub">Dashboard de apostas</div>
-
     <input type="password" id="pwd-input" placeholder="••••••••" autocomplete="off" />
     <button onclick="tryLogin()">Entrar</button>
     <div class="login-error" id="login-error"></div>
-
-    <div class="setup-box">
-      <strong>⚙️ Configuração necessária</strong><br><br>
-      Antes de publicar, edite este arquivo e defina:<br><br>
-      1. <code>PASSWORD_HASH</code> — hash SHA-256 da sua senha<br>
-      2. <code>SHEET_ID</code> — ID da sua planilha Google<br><br>
-      Gere o hash em: <code>emn.tools/sha256</code><br>
-      O ID está na URL do Sheets após <code>/d/</code>
-    </div>
   </div>
 </div>
 
@@ -479,45 +208,25 @@
       <button class="btn-logout" onclick="logout()">Sair</button>
     </div>
   </header>
-
   <main>
     <div id="content">
-      <div class="loading">
-        <div class="spinner"></div>
-        Carregando dados...
-      </div>
+      <div class="loading"><div class="spinner"></div>Carregando dados...</div>
     </div>
   </main>
 </div>
 
 <script>
-// ════════════════════════════════════════════
-//  CONFIGURAÇÃO — edite antes de publicar
-// ════════════════════════════════════════════
 const CONFIG = {
-  // Cole aqui o hash SHA-256 da sua senha
-  // Gere em: https://emn178.github.io/online-tools/sha256.html
   PASSWORD_HASH: '271c09ecbcc647270b0b8c933e3e21cfeda77956fba413ceef4acaa32c148a61',
-
-  // ID da sua planilha Google Sheets (da URL)
   SHEET_ID: '1Hxj5cqvp72vtwp_czJuV5cpYteN2pOj5UVSHzlg-iHg',
-
-  // Nomes exatos das abas
-  ABAS: {
-    overview: 'Overview',
-    apostas:  'Apostas',
-    grupos:   'Grupos',
-    saldos:   'Saldos',
-  }
+  ABAS: { overview: 'Overview', apostas: 'Apostas', grupos: 'Grupos', saldos: 'Saldos' }
 };
-// ════════════════════════════════════════════
 
 // ── AUTH ──
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
-
 async function tryLogin() {
   const val = document.getElementById('pwd-input').value;
   const hash = await sha256(val);
@@ -531,68 +240,49 @@ async function tryLogin() {
     document.getElementById('pwd-input').value = '';
   }
 }
-
-document.getElementById('pwd-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') tryLogin();
-});
-
-function logout() {
-  sessionStorage.removeItem('auth');
-  location.reload();
-}
-
-// Verifica sessão ao carregar
+document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+function logout() { sessionStorage.removeItem('auth'); location.reload(); }
 if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   loadData();
 }
 
-// ── SHEETS CSV ──
+// ── API ──
 function sheetUrl(aba) {
   return 'https://script.google.com/macros/s/AKfycbzT-XGSQKjdG-cSVMzNyxYrmDDUJEwyoiIgAzd2DX1OqL0AHIu86w692ZLjloccwMQE7Q/exec?sheet=' + encodeURIComponent(aba);
 }
-
 async function fetchSheet(aba) {
   const r = await fetch(sheetUrl(aba));
-  const data = await r.json();
-  return data;
+  return await r.json();
 }
 
-function parseCSV(txt) {
-  return txt.trim().split('\n').map(line => {
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQ = !inQ; continue; }
-      if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
-      cur += c;
-    }
-    cols.push(cur.trim());
-    return cols;
-  });
+// ── UTILS ──
+function toNum(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return v;
+  return parseFloat(String(v).replace(/R\$|\s/g,'').replace(/\./g,'').replace(',','.')) || 0;
 }
-
-function toNum(s) {
-  if (s === null || s === undefined || s === '') return 0;
-  if (typeof s === 'number') return s;
-  return parseFloat(String(s).replace(/[R$\s.]/g,'').replace(',','.')) || 0;
-}
-
 function fmtBRL(n) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
 }
+function fmtPct(n) { return (n * 100).toFixed(2) + '%'; }
 
-function fmtPct(n) {
-  return (n * 100).toFixed(2) + '%';
+// Parser de data — aceita objeto Date (JSON), string dd/MM/yyyy, ou ISO
+function parseData(raw) {
+  if (!raw) return null;
+  if (raw instanceof Date) return isNaN(raw) ? null : raw;
+  const s = String(raw).trim();
+  // dd/MM/yyyy ou dd-MM-yyyy
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
 }
 
 // ── LOAD DATA ──
 async function loadData() {
-  document.getElementById('content').innerHTML = `
-    <div class="loading"><div class="spinner"></div>Carregando dados...</div>`;
-
+  document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Carregando dados...</div>';
   try {
     const [overview, apostas, grupos, saldos] = await Promise.all([
       fetchSheet(CONFIG.ABAS.overview),
@@ -600,23 +290,14 @@ async function loadData() {
       fetchSheet(CONFIG.ABAS.grupos),
       fetchSheet(CONFIG.ABAS.saldos),
     ]);
-
     renderDashboard(overview, apostas, grupos, saldos);
-    document.getElementById('last-update').textContent =
-      'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
-
+    document.getElementById('last-update').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
   } catch(e) {
-    document.getElementById('content').innerHTML = `
-      <div class="no-data">
-        ⚠️ Erro ao carregar dados.<br><br>
-        Verifique se o SHEET_ID está correto e se a planilha está publicada.<br>
-        <small style="color:#555">${e.message}</small>
-      </div>`;
+    document.getElementById('content').innerHTML = '<div class="no-data">⚠️ Erro ao carregar dados.<br><br>Verifique se a planilha está publicada.<br><small style="color:#555">' + e.message + '</small></div>';
   }
 }
 
-
-// ── ESTADO GLOBAL DE FILTROS E PAGINAÇÃO ──
+// ── ESTADO GLOBAL ──
 let _apostasAllRows = [];
 let _saldosAllRows  = [];
 let _saldosPagina   = 0;
@@ -631,7 +312,6 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   const bancaAtual    = toNum(overview[2]?.[1]);
   const roi           = toNum(overview[2]?.[3]);
 
-  // Meses
   const meses = [];
   for (let i = 5; i <= 16; i++) {
     const row = overview[i];
@@ -639,87 +319,54 @@ function renderDashboard(overview, apostas, grupos, saldos) {
     meses.push({ nome: row[0], apostas: toNum(row[1]), apostado: toNum(row[2]), lucro: toNum(row[3]), roi: toNum(row[4]) });
   }
 
-  // Apostas — todas com dados
-  _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 2);
+  _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 1);
   _saldosAllRows  = saldos.slice(2).filter(r => r[5] && String(r[5]).length > 1);
   _saldosPagina   = 0;
 
-  // Grupos separados por tipo
-  const gruposDesreg  = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Desreguladas'));
-  const gruposEsp     = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Especiais'));
+  const gruposDesreg = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Desreguladas'));
+  const gruposEsp    = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Especiais'));
 
   const lucroColor = lucroTotal >= 0 ? 'positive' : 'negative';
 
   let html = `
     <div class="kpi-grid">
-      <div class="kpi">
-        <div class="kpi-label">Banca Inicial</div>
-        <div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div>
-        <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Banca Atual</div>
-        <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
-        <div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Lucro Total</div>
-        <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
-        <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Total Apostado</div>
-        <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
-        <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
-      </div>
+      <div class="kpi"><div class="kpi-label">Banca Inicial</div><div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div><div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div></div>
+      <div class="kpi"><div class="kpi-label">Banca Atual</div><div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div><div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div></div>
+      <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div><div class="kpi-sub">ROI: ${fmtPct(roi)}</div></div>
+      <div class="kpi"><div class="kpi-label">Total Apostado</div><div class="kpi-value neutral">${fmtBRL(totalApostado)}</div><div class="kpi-sub">${_apostasAllRows.length} apostas no total</div></div>
     </div>
-
     <div class="section-title">Evolução mensal</div>
     <div class="chart-grid">
-      <div class="card">
-        <div class="card-title">Lucro por mês (R$)</div>
-        <div class="chart-wrap"><canvas id="chartMensal"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Apostas por mês</div>
-        <div class="chart-wrap"><canvas id="chartApostas"></canvas></div>
-      </div>
+      <div class="card"><div class="card-title">Lucro por mês (R$)</div><div class="chart-wrap"><canvas id="chartMensal"></canvas></div></div>
+      <div class="card"><div class="card-title">Apostas por mês</div><div class="chart-wrap"><canvas id="chartApostas"></canvas></div></div>
     </div>`;
 
-  // ── GRUPOS SEGMENTADOS ──
+  // Grupos segmentados
   const renderGrupoCards = (rows) => rows.map(r => {
     const lucro = toNum(r[3]);
     const cl = lucro >= 0 ? 'positive' : 'negative';
     return `<div class="grupo-card">
       <div class="grupo-name">${r[0]}</div>
+      <div class="grupo-tipo">${r[1]}</div>
       <div class="grupo-lucro ${cl}">${fmtBRL(lucro)}</div>
-      <div class="kpi-sub" style="margin-top:0.3rem">${r[2]} apostas</div>
+      <div class="kpi-sub" style="margin-top:0.3rem">${toNum(r[2])} apostas</div>
     </div>`;
   }).join('');
 
   if (gruposDesreg.length || gruposEsp.length) {
     html += `<div class="section-title">Grupos</div>`;
-
-    if (gruposDesreg.length) {
-      html += `<div class="grupo-segmento-label">Odds Desreguladas</div>
-               <div class="grupos-grid">${renderGrupoCards(gruposDesreg)}</div>`;
-    }
-    if (gruposEsp.length) {
-      html += `<div class="grupo-segmento-label">Especiais</div>
-               <div class="grupos-grid">${renderGrupoCards(gruposEsp)}</div>`;
-    }
+    if (gruposDesreg.length) html += `<div class="grupo-segmento-label">Odds Desreguladas</div><div class="grupos-grid">${renderGrupoCards(gruposDesreg)}</div>`;
+    if (gruposEsp.length)    html += `<div class="grupo-segmento-label">Especiais</div><div class="grupos-grid">${renderGrupoCards(gruposEsp)}</div>`;
   }
 
-  // ── SALDOS COM PAGINAÇÃO ──
-  html += `<div class="section-title">Saldos por casa</div>
-           <div id="saldos-container"></div>
-           <div class="paginacao" id="saldos-paginacao"></div>`;
+  // Saldos com paginação
+  html += `<div class="section-title">Saldos por casa</div><div id="saldos-container"></div><div class="paginacao" id="saldos-paginacao"></div>`;
 
-  // ── APOSTAS COM FILTRO ──
+  // Apostas com filtro
   html += `
-    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <span>Apostas recentes</span>
-      <div class="filtro-tabs" id="filtro-tabs">
+      <div class="filtro-tabs">
         <button class="filtro-btn active" onclick="filtrarApostas(15,this)">15 dias</button>
         <button class="filtro-btn" onclick="filtrarApostas(30,this)">30 dias</button>
         <button class="filtro-btn" onclick="filtrarApostas(90,this)">90 dias</button>
@@ -730,61 +377,39 @@ function renderDashboard(overview, apostas, grupos, saldos) {
 
   document.getElementById('content').innerHTML = html;
 
-  // Renderiza saldos e apostas via funções separadas
   renderSaldos();
   filtrarApostas(15, document.querySelector('.filtro-btn.active'));
 
-  // ── CHARTS ──
+  // Charts
   const mesesLabels  = meses.map(m => m.nome.substring(0,3));
   const mesesLucros  = meses.map(m => m.lucro);
   const mesesApostas = meses.map(m => m.apostas);
 
   new Chart(document.getElementById('chartMensal'), {
     type: 'bar',
-    data: { labels: mesesLabels, datasets: [{ data: mesesLucros,
-      backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'),
-      borderRadius: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: { ticks: { color: '#6b6b85', font: { size: 11 }, callback: v => 'R$' + v }, grid: { color: 'rgba(255,255,255,0.04)' } }
-      }
-    }
+    data: { labels: mesesLabels, datasets: [{ data: mesesLucros, backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'), borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#6b6b85', font: { size: 11 }, callback: v => 'R$' + v }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
   });
-
   new Chart(document.getElementById('chartApostas'), {
     type: 'bar',
-    data: { labels: mesesLabels, datasets: [{ data: mesesApostas,
-      backgroundColor: 'rgba(124,108,250,0.6)', borderRadius: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
-      }
-    }
+    data: { labels: mesesLabels, datasets: [{ data: mesesApostas, backgroundColor: 'rgba(124,108,250,0.6)', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
   });
 }
 
 // ── SALDOS COM PAGINAÇÃO ──
 function renderSaldos() {
-  const container  = document.getElementById('saldos-container');
-  const paginacao  = document.getElementById('saldos-paginacao');
+  const container = document.getElementById('saldos-container');
+  const paginacao = document.getElementById('saldos-paginacao');
   if (!container) return;
-
   const total   = _saldosAllRows.length;
   const inicio  = _saldosPagina * SALDOS_POR_PAGINA;
   const fim     = Math.min(inicio + SALDOS_POR_PAGINA, total);
   const paginas = Math.ceil(total / SALDOS_POR_PAGINA);
   const rows    = _saldosAllRows.slice(inicio, fim);
-
-  if (total === 0) {
-    container.innerHTML = '<div class="no-data">Nenhum saldo registrado.</div>';
-    paginacao.innerHTML = '';
-    return;
-  }
-
+  if (total === 0) { container.innerHTML = '<div class="no-data">Nenhum saldo registrado.</div>'; paginacao.innerHTML = ''; return; }
   let html = '<div class="saldos-grid">';
   rows.forEach(r => {
     const dep   = toNum(r[6]);
@@ -802,16 +427,11 @@ function renderSaldos() {
   });
   html += '</div>';
   container.innerHTML = html;
-
-  // Paginação
   if (paginas <= 1) { paginacao.innerHTML = ''; return; }
   let pHtml = `<div class="pag-info">${inicio+1}–${fim} de ${total} casas</div><div class="pag-btns">`;
   pHtml += `<button class="pag-btn" onclick="mudarPaginaSaldos(-1)" ${_saldosPagina===0?'disabled':''}>‹ Anterior</button>`;
-  for (let i = 0; i < paginas; i++) {
-    pHtml += `<button class="pag-btn ${i===_saldosPagina?'active':''}" onclick="mudarPaginaSaldos(${i}, true)">${i+1}</button>`;
-  }
-  pHtml += `<button class="pag-btn" onclick="mudarPaginaSaldos(1)" ${_saldosPagina===paginas-1?'disabled':''}>Próximo ›</button>`;
-  pHtml += '</div>';
+  for (let i = 0; i < paginas; i++) pHtml += `<button class="pag-btn ${i===_saldosPagina?'active':''}" onclick="mudarPaginaSaldos(${i},true)">${i+1}</button>`;
+  pHtml += `<button class="pag-btn" onclick="mudarPaginaSaldos(1)" ${_saldosPagina===paginas-1?'disabled':''}>Próximo ›</button></div>`;
   paginacao.innerHTML = pHtml;
 }
 
@@ -825,29 +445,26 @@ function mudarPaginaSaldos(val, absoluto) {
 function filtrarApostas(dias, btn) {
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-
   const agora = new Date();
   const rows = dias === 0
     ? _apostasAllRows
     : _apostasAllRows.filter(r => {
-        const partes = String(r[1]).split('/');
-        if (partes.length < 3) return false;
-        const d = new Date(partes[2], partes[1]-1, partes[0]);
+        const d = parseData(r[1]);
+        if (!d) return false;
         return (agora - d) / 86400000 <= dias;
       });
-
   const exibir = [...rows].reverse();
-
   let html = `<table><thead><tr>
     <th>Data</th><th>Esporte</th><th>Casa</th><th>Grupo</th>
     <th>Odd</th><th>Valor</th><th>Status</th><th>Lucro</th>
   </tr></thead><tbody>`;
-
   if (exibir.length === 0) {
     html += `<tr><td colspan="8" class="no-data">Nenhuma aposta neste período.</td></tr>`;
   } else {
     exibir.forEach(r => {
-      const data    = r[1] || '';
+      // A=ID B=Data C=Esporte D=Casa E=Aposta F=Grupo G=Tipo H=OddAnunc I=OddLanc J=Valor K=Status L=Lucro
+      const d = parseData(r[1]);
+      const data    = d ? d.toLocaleDateString('pt-BR') : String(r[1] || '');
       const esporte = r[2] || '';
       const casa    = r[3] || '';
       const grupo   = r[5] || '';
@@ -855,11 +472,9 @@ function filtrarApostas(dias, btn) {
       const valor   = toNum(r[9]);
       const status  = String(r[10] || '').toLowerCase();
       const lucro   = toNum(r[11]);
-
       let badge = `<span class="badge badge-pend">Pendente</span>`;
       if (status === 'green') badge = `<span class="badge badge-green">✓ Green</span>`;
       if (status === 'red')   badge = `<span class="badge badge-red">✗ Red</span>`;
-
       const lc = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
       html += `<tr>
         <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td>
@@ -868,7 +483,6 @@ function filtrarApostas(dias, btn) {
       </tr>`;
     });
   }
-
   html += '</tbody></table>';
   document.getElementById('apostas-tabela').innerHTML = html;
 }
