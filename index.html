@@ -7,138 +7,65 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐯</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  /* ── RESET & BASE ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: rgba(255,255,255,0.07);
-    --accent: #7c6cfa;
-    --accent2: #fa6c6c;
-    --green: #4ade80;
-    --red: #f87171;
-    --text: #f0f0f8;
-    --muted: #6b6b85;
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24;
+    --border: rgba(255,255,255,0.07); --accent: #7c6cfa; --accent2: #fa6c6c;
+    --green: #4ade80; --red: #f87171; --text: #f0f0f8; --muted: #6b6b85;
     --font: 'Inter', system-ui, sans-serif;
   }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-  /* ── LOGIN ── */
-  #login-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 1rem;
-  }
-  .login-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
-  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; line-height: 1.5; }
+
+  /* LOGIN */
+  #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 380px; text-align: center; }
   .login-logo { font-size: 2.5rem; margin-bottom: 0.5rem; }
   .login-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; letter-spacing: -0.02em; }
   .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
-  .login-card input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 1rem;
-    padding: 0.85rem 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 1rem;
-    letter-spacing: 0.1em;
-    text-align: center;
-  }
+  .login-card input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 1rem; padding: 0.85rem 1rem; outline: none; transition: border-color 0.2s; margin-bottom: 1rem; letter-spacing: 0.1em; text-align: center; }
   .login-card input:focus { border-color: var(--accent); }
-  .login-card button {
-    width: 100%;
-    background: var(--accent);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 600;
-    padding: 0.85rem;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-  }
+  .login-card button { width: 100%; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-size: 0.95rem; font-weight: 600; padding: 0.85rem; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
   .login-card button:hover { opacity: 0.9; }
   .login-card button:active { transform: scale(0.98); }
   .login-error { color: var(--red); font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2em; }
-  /* ── DASHBOARD ── */
+
+  /* DASHBOARD */
   #dashboard { display: none; }
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
   .header-right { display: flex; align-items: center; gap: 1rem; }
   .last-update { font-size: 0.75rem; color: var(--muted); }
-  .btn-refresh {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-    transition: border-color 0.2s;
-  }
+  .btn-refresh { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; font-size: 0.8rem; padding: 0.4rem 0.8rem; transition: border-color 0.2s; }
   .btn-refresh:hover { border-color: var(--accent); }
   .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.8rem; padding: 0.4rem; }
   .btn-logout:hover { color: var(--red); }
   main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
-  /* ── LOADING ── */
+
+  /* LOADING */
   .loading { text-align: center; padding: 4rem; color: var(--muted); }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 1rem;
-  }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  /* ── KPI CARDS ── */
+
+  /* KPIs */
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
   .kpi-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
   .kpi-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; }
-  .positive { color: var(--green); }
-  .negative { color: var(--red); }
-  .neutral  { color: var(--text); }
-  /* ── SECTION ── */
+  .positive { color: var(--green); } .negative { color: var(--red); } .neutral { color: var(--text); }
+
+  /* SECTION */
   .section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
-  /* ── CHART CARDS ── */
+
+  /* CHARTS */
   .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem; }
   @media (max-width: 700px) { .chart-grid { grid-template-columns: 1fr; } }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
   .card-title { font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.06em; }
   .chart-wrap { position: relative; height: 220px; }
-  /* ── TABLE ── */
+
+  /* TABLE */
   .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
   thead th { padding: 0.6rem 1.25rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
@@ -150,22 +77,29 @@
   .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
   .badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
   .badge-pend  { background: rgba(255,255,255,0.06); color: var(--muted); }
-  /* ── GRUPOS ── */
+
+  /* GRUPOS */
   .grupos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
   .grupo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .grupo-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.2rem; }
   .grupo-tipo { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
   .grupo-lucro { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-  /* ── GRUPO SEGMENTADO ── */
   .grupo-segmento-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0.75rem 0 0.5rem; padding-left: 2px; font-weight: 600; }
-  /* ── SALDOS ── */
-  .saldos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 0.5rem; }
+
+  /* SALDOS — grid com max 3 colunas para evitar layout quebrado */
+  .saldos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
   .saldo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .saldo-casa { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
   .saldo-row  { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem; color: var(--muted); }
   .saldo-row span:last-child { color: var(--text); font-weight: 500; }
   .saldo-total { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; }
-  /* ── PAGINAÇÃO ── */
+
+  /* PAGINAÇÃO */
   .paginacao { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
   .pag-info { font-size: 0.75rem; color: var(--muted); }
   .pag-btns { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -173,20 +107,37 @@
   .pag-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
   .pag-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  /* ── FILTRO TABS ── */
-  .filtro-tabs { display: flex; gap: 6px; }
-  .filtro-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; }
+
+  /* FILTRO */
+  .filtro-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .filtro-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filtro-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; white-space: nowrap; }
   .filtro-btn:hover { border-color: var(--accent); color: var(--text); }
   .filtro-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  /* ── NO DATA ── */
+
+  /* PERÍODO PERSONALIZADO */
+  .periodo-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .periodo-wrap input[type="date"] {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 0.75rem; padding: 0.3rem 0.6rem; outline: none;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .periodo-wrap input[type="date"]:focus { border-color: var(--accent); }
+  .periodo-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+  .periodo-sep { font-size: 0.75rem; color: var(--muted); }
+  .btn-periodo { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; }
+  .btn-periodo:hover { border-color: var(--accent); color: var(--text); }
+
+  /* NO DATA */
   .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
-  /* ── MOBILE ── */
+
+  /* MOBILE */
   @media (max-width: 600px) { header { padding: 1rem; } main { padding: 1rem; } .kpi-value { font-size: 1.3rem; } }
 </style>
 </head>
 <body>
 
-<!-- ═══ LOGIN ═══ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">🐯</div>
@@ -198,7 +149,7 @@
   </div>
 </div>
 
-<!-- ═══ DASHBOARD ═══ -->
+<!-- DASHBOARD -->
 <div id="dashboard">
   <header>
     <div class="logo">🐯 <span>Tigrinho</span> Bets</div>
@@ -222,14 +173,13 @@ const CONFIG = {
   ABAS: { overview: 'Overview', apostas: 'Apostas', grupos: 'Grupos', saldos: 'Saldos' }
 };
 
-// ── AUTH ──
+// AUTH
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 async function tryLogin() {
-  const val = document.getElementById('pwd-input').value;
-  const hash = await sha256(val);
+  const hash = await sha256(document.getElementById('pwd-input').value);
   if (hash === CONFIG.PASSWORD_HASH) {
     sessionStorage.setItem('auth', hash);
     document.getElementById('login-screen').style.display = 'none';
@@ -248,7 +198,7 @@ if (sessionStorage.getItem('auth') === CONFIG.PASSWORD_HASH) {
   loadData();
 }
 
-// ── API ──
+// API
 function sheetUrl(aba) {
   return 'https://script.google.com/macros/s/AKfycbzT-XGSQKjdG-cSVMzNyxYrmDDUJEwyoiIgAzd2DX1OqL0AHIu86w692ZLjloccwMQE7Q/exec?sheet=' + encodeURIComponent(aba);
 }
@@ -257,30 +207,32 @@ async function fetchSheet(aba) {
   return await r.json();
 }
 
-// ── UTILS ──
+// UTILS
 function toNum(v) {
   if (v === null || v === undefined || v === '') return 0;
   if (typeof v === 'number') return v;
   return parseFloat(String(v).replace(/R\$|\s/g,'').replace(/\./g,'').replace(',','.')) || 0;
 }
-function fmtBRL(n) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
-}
+function fmtBRL(n) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n); }
 function fmtPct(n) { return (n * 100).toFixed(2) + '%'; }
 
-// Parser de data — aceita objeto Date (JSON), string dd/MM/yyyy, ou ISO
 function parseData(raw) {
   if (!raw) return null;
   if (raw instanceof Date) return isNaN(raw) ? null : raw;
   const s = String(raw).trim();
-  // dd/MM/yyyy ou dd-MM-yyyy
   const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]));
   const d = new Date(s);
   return isNaN(d) ? null : d;
 }
 
-// ── LOAD DATA ──
+function isMesmaData(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth()    === d2.getMonth() &&
+         d1.getDate()     === d2.getDate();
+}
+
+// LOAD
 async function loadData() {
   document.getElementById('content').innerHTML = '<div class="loading"><div class="spinner"></div>Carregando dados...</div>';
   try {
@@ -297,13 +249,16 @@ async function loadData() {
   }
 }
 
-// ── ESTADO GLOBAL ──
+// ESTADO GLOBAL
 let _apostasAllRows = [];
 let _saldosAllRows  = [];
 let _saldosPagina   = 0;
-const SALDOS_POR_PAGINA = 6;
+let _apostasPagina  = 0;
+let _apostasFiltered = [];
+const SALDOS_POR_PAGINA  = 6;
+const APOSTAS_POR_PAGINA = 25;
 
-// ── RENDER ──
+// RENDER PRINCIPAL
 function renderDashboard(overview, apostas, grupos, saldos) {
   const bancaInicial  = toNum(overview[0]?.[1]);
   const unidade       = toNum(overview[0]?.[3]);
@@ -322,11 +277,11 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 1);
   _saldosAllRows  = saldos.slice(2).filter(r => r[5] && String(r[5]).length > 1);
   _saldosPagina   = 0;
+  _apostasPagina  = 0;
 
   const gruposDesreg = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Desreguladas'));
   const gruposEsp    = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Especiais'));
-
-  const lucroColor = lucroTotal >= 0 ? 'positive' : 'negative';
+  const lucroColor   = lucroTotal >= 0 ? 'positive' : 'negative';
 
   let html = `
     <div class="kpi-grid">
@@ -359,26 +314,38 @@ function renderDashboard(overview, apostas, grupos, saldos) {
     if (gruposEsp.length)    html += `<div class="grupo-segmento-label">Especiais</div><div class="grupos-grid">${renderGrupoCards(gruposEsp)}</div>`;
   }
 
-  // Saldos com paginação
+  // Saldos
   html += `<div class="section-title">Saldos por casa</div><div id="saldos-container"></div><div class="paginacao" id="saldos-paginacao"></div>`;
 
-  // Apostas com filtro
+  // Apostas — header com filtros e período personalizado
   html += `
-    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-      <span>Apostas recentes</span>
-      <div class="filtro-tabs">
-        <button class="filtro-btn active" onclick="filtrarApostas(15,this)">15 dias</button>
-        <button class="filtro-btn" onclick="filtrarApostas(30,this)">30 dias</button>
-        <button class="filtro-btn" onclick="filtrarApostas(90,this)">90 dias</button>
-        <button class="filtro-btn" onclick="filtrarApostas(0,this)">Todas</button>
+    <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+      <span style="padding-top:2px;">Apostas recentes</span>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+        <div class="filtro-tabs">
+          <button class="filtro-btn active" onclick="filtrarApostas('hoje',this)">Hoje</button>
+          <button class="filtro-btn" onclick="filtrarApostas(3,this)">3 dias</button>
+          <button class="filtro-btn" onclick="filtrarApostas(7,this)">7 dias</button>
+          <button class="filtro-btn" onclick="filtrarApostas(15,this)">15 dias</button>
+          <button class="filtro-btn" onclick="filtrarApostas(30,this)">30 dias</button>
+          <button class="filtro-btn" onclick="filtrarApostas(90,this)">90 dias</button>
+          <button class="filtro-btn" onclick="filtrarApostas(0,this)">Todas</button>
+        </div>
+        <div class="periodo-wrap">
+          <input type="date" id="dt-inicio" title="Data início">
+          <span class="periodo-sep">até</span>
+          <input type="date" id="dt-fim" title="Data fim">
+          <button class="btn-periodo" onclick="filtrarPeriodo()">Filtrar período</button>
+        </div>
       </div>
     </div>
-    <div class="table-card"><div id="apostas-tabela"></div></div>`;
+    <div class="table-card"><div id="apostas-tabela"></div></div>
+    <div class="paginacao" id="apostas-paginacao"></div>`;
 
   document.getElementById('content').innerHTML = html;
 
   renderSaldos();
-  filtrarApostas(15, document.querySelector('.filtro-btn.active'));
+  filtrarApostas('hoje', document.querySelector('.filtro-btn.active'));
 
   // Charts
   const mesesLabels  = meses.map(m => m.nome.substring(0,3));
@@ -399,7 +366,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   });
 }
 
-// ── SALDOS COM PAGINAÇÃO ──
+// SALDOS COM PAGINAÇÃO
 function renderSaldos() {
   const container = document.getElementById('saldos-container');
   const paginacao = document.getElementById('saldos-paginacao');
@@ -441,29 +408,68 @@ function mudarPaginaSaldos(val, absoluto) {
   renderSaldos();
 }
 
-// ── APOSTAS COM FILTRO ──
-function filtrarApostas(dias, btn) {
+// APOSTAS — FILTRO POR PERÍODO PERSONALIZADO
+function filtrarPeriodo() {
+  const ini = document.getElementById('dt-inicio').value;
+  const fim = document.getElementById('dt-fim').value;
+  if (!ini && !fim) return;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  const dIni = ini ? new Date(ini + 'T00:00:00') : null;
+  const dFim = fim ? new Date(fim + 'T23:59:59') : null;
+  _apostasFiltered = _apostasAllRows.filter(r => {
+    const d = parseData(r[1]);
+    if (!d) return false;
+    if (dIni && d < dIni) return false;
+    if (dFim && d > dFim) return false;
+    return true;
+  }).slice().reverse();
+  _apostasPagina = 0;
+  renderApostasTabela();
+}
+
+// APOSTAS — FILTRO POR PERÍODO PRÉ-DEFINIDO
+function filtrarApostas(filtro, btn) {
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const agora = new Date();
-  const rows = dias === 0
-    ? _apostasAllRows
-    : _apostasAllRows.filter(r => {
-        const d = parseData(r[1]);
-        if (!d) return false;
-        return (agora - d) / 86400000 <= dias;
-      });
-  const exibir = [...rows].reverse();
+  let rows;
+  if (filtro === 0) {
+    rows = _apostasAllRows;
+  } else if (filtro === 'hoje') {
+    rows = _apostasAllRows.filter(r => {
+      const d = parseData(r[1]);
+      return d && isMesmaData(d, agora);
+    });
+  } else {
+    rows = _apostasAllRows.filter(r => {
+      const d = parseData(r[1]);
+      if (!d) return false;
+      return (agora - d) / 86400000 <= filtro;
+    });
+  }
+  _apostasFiltered = [...rows].reverse();
+  _apostasPagina = 0;
+  renderApostasTabela();
+}
+
+// APOSTAS — RENDER DA TABELA COM PAGINAÇÃO
+function renderApostasTabela() {
+  const total   = _apostasFiltered.length;
+  const paginas = Math.ceil(total / APOSTAS_POR_PAGINA);
+  const inicio  = _apostasPagina * APOSTAS_POR_PAGINA;
+  const fim     = Math.min(inicio + APOSTAS_POR_PAGINA, total);
+  const exibir  = _apostasFiltered.slice(inicio, fim);
+
   let html = `<table><thead><tr>
     <th>Data</th><th>Esporte</th><th>Casa</th><th>Grupo</th>
     <th>Odd</th><th>Valor</th><th>Status</th><th>Lucro</th>
   </tr></thead><tbody>`;
+
   if (exibir.length === 0) {
     html += `<tr><td colspan="8" class="no-data">Nenhuma aposta neste período.</td></tr>`;
   } else {
     exibir.forEach(r => {
-      // A=ID B=Data C=Esporte D=Casa E=Aposta F=Grupo G=Tipo H=OddAnunc I=OddLanc J=Valor K=Status L=Lucro
-      const d = parseData(r[1]);
+      const d       = parseData(r[1]);
       const data    = d ? d.toLocaleDateString('pt-BR') : String(r[1] || '');
       const esporte = r[2] || '';
       const casa    = r[3] || '';
@@ -485,6 +491,22 @@ function filtrarApostas(dias, btn) {
   }
   html += '</tbody></table>';
   document.getElementById('apostas-tabela').innerHTML = html;
+
+  // Paginação das apostas
+  const pag = document.getElementById('apostas-paginacao');
+  if (!pag) return;
+  if (paginas <= 1) { pag.innerHTML = total > 0 ? `<div class="pag-info">${total} aposta${total>1?'s':''}</div>` : ''; return; }
+  let pHtml = `<div class="pag-info">${inicio+1}–${fim} de ${total} apostas</div><div class="pag-btns">`;
+  pHtml += `<button class="pag-btn" onclick="mudarPaginaApostas(-1)" ${_apostasPagina===0?'disabled':''}>‹ Anterior</button>`;
+  for (let i = 0; i < paginas; i++) pHtml += `<button class="pag-btn ${i===_apostasPagina?'active':''}" onclick="mudarPaginaApostas(${i},true)">${i+1}</button>`;
+  pHtml += `<button class="pag-btn" onclick="mudarPaginaApostas(1)" ${_apostasPagina===paginas-1?'disabled':''}>Próximo ›</button></div>`;
+  pag.innerHTML = pHtml;
+}
+
+function mudarPaginaApostas(val, absoluto) {
+  const paginas = Math.ceil(_apostasFiltered.length / APOSTAS_POR_PAGINA);
+  _apostasPagina = absoluto ? val : Math.max(0, Math.min(paginas-1, _apostasPagina + val));
+  renderApostasTabela();
 }
 </script>
 </body>
