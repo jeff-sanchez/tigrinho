@@ -76,7 +76,8 @@
   .badge { display: inline-block; border-radius: 6px; font-size: 0.68rem; font-weight: 600; padding: 0.2rem 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
   .badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
   .badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
-  .badge-pend  { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .badge-pend    { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .badge-anulada { background: rgba(251,191,36,0.15); color: #fbbf24; }
 
   /* GRUPOS */
   .grupos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
@@ -129,26 +130,40 @@
   .btn-periodo:hover { border-color: var(--accent); color: var(--text); }
 
   /* FILTROS DE COLUNA */
-  .col-filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.75rem; align-items: flex-end; }
+  .col-filtros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 0.75rem;
+    align-items: end;
+  }
   .col-filtro-grupo { display: flex; flex-direction: column; gap: 3px; }
   .col-filtro-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
   .col-filtro-select {
+    width: 100%;
     background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-size: 0.78rem; padding: 0.3rem 0.6rem; outline: none;
-    cursor: pointer; min-width: 110px; transition: border-color 0.2s;
+    color: var(--text); font-size: 0.78rem; padding: 0.35rem 0.6rem; outline: none;
+    cursor: pointer; transition: border-color 0.2s;
   }
   .col-filtro-select:focus { border-color: var(--accent); }
   .col-filtro-select option { background: var(--surface2); }
   .col-filtro-odd { display: flex; align-items: center; gap: 4px; }
   .col-filtro-odd input[type="number"] {
     background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-size: 0.78rem; padding: 0.3rem 0.5rem; outline: none;
-    width: 64px; transition: border-color 0.2s;
+    color: var(--text); font-size: 0.78rem; padding: 0.35rem 0.5rem; outline: none;
+    width: 100%; transition: border-color 0.2s;
   }
   .col-filtro-odd input[type="number"]:focus { border-color: var(--accent); }
   .col-filtro-odd input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
-  .btn-limpar-cols { background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.3rem 0.65rem; transition: all 0.15s; align-self: flex-end; }
+  .col-filtro-odd-wrap { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px; }
+  .btn-limpar-cols { width: 100%; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.35rem 0.65rem; transition: all 0.15s; }
   .btn-limpar-cols:hover { border-color: var(--red); color: var(--red); }
+
+  /* KPI PROGRESSÃO */
+  .kpi-progress { font-size: 0.72rem; margin-top: 0.4rem; font-weight: 600; }
+  .kpi-progress.up   { color: var(--green); }
+  .kpi-progress.down { color: var(--red); }
+  .kpi-progress.flat { color: var(--muted); }
 
   /* NO DATA */
   .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
@@ -306,12 +321,40 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   const gruposEsp    = grupos.slice(3).filter(r => r[0] && String(r[1]).includes('Especiais'));
   const lucroColor   = lucroTotal >= 0 ? 'positive' : 'negative';
 
+  // Progressão da banca vs início
+  const progPct    = bancaInicial > 0 ? ((bancaAtual - bancaInicial) / bancaInicial) * 100 : 0;
+  const progSinal  = progPct > 0 ? '+' : '';
+  const progClass  = progPct > 0 ? 'up' : progPct < 0 ? 'down' : 'flat';
+  const progLabel  = `${progSinal}${progPct.toFixed(1)}% desde o início`;
+
+  // Progressão do lucro vs banca inicial
+  const roiClass   = roi >= 0 ? 'up' : 'down';
+  const roiSinal   = roi > 0 ? '+' : '';
+
   let html = `
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-label">Banca Inicial</div><div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div><div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div></div>
-      <div class="kpi"><div class="kpi-label">Banca Atual</div><div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div><div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div></div>
-      <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div><div class="kpi-sub">ROI: ${fmtPct(roi)}</div></div>
-      <div class="kpi"><div class="kpi-label">Total Apostado</div><div class="kpi-value neutral">${fmtBRL(totalApostado)}</div><div class="kpi-sub">${_apostasAllRows.length} apostas no total</div></div>
+      <div class="kpi">
+        <div class="kpi-label">Banca Inicial</div>
+        <div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div>
+        <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Banca Atual</div>
+        <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
+        <div class="kpi-sub">${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
+        <div class="kpi-progress ${progClass}">${progLabel}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Lucro Total</div>
+        <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
+        <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
+        <div class="kpi-progress ${roiClass}">${roiSinal}${(roi*100).toFixed(1)}% sobre o apostado</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Apostado</div>
+        <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
+        <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
+      </div>
     </div>
     <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
       <span style="padding-top:2px;">Evolução</span>
@@ -525,10 +568,56 @@ function renderEvolucao() {
   if (_chartLucro)   { _chartLucro.destroy();   _chartLucro = null; }
   if (_chartApostas) { _chartApostas.destroy(); _chartApostas = null; }
 
+  // Lucro acumulado para a linha
+  const lucrosAcum = lucros.reduce((acc, v, i) => { acc.push((acc[i-1] || 0) + v); return acc; }, []);
+
   _chartLucro = new Chart(document.getElementById('chartMensal'), {
     type: 'bar',
-    data: { labels, datasets: [{ data: lucros, backgroundColor: lucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'), borderRadius: 6 }] },
-    options: { ...optBase, scales: { ...optBase.scales, y: { ...optBase.scales.y, ticks: { ...optBase.scales.y.ticks, callback: v => 'R$' + v } } } }
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Lucro do período',
+          data: lucros,
+          backgroundColor: lucros.map(v => v >= 0 ? 'rgba(74,222,128,0.6)' : 'rgba(248,113,113,0.6)'),
+          borderRadius: 4,
+          yAxisID: 'y',
+        },
+        {
+          type: 'line',
+          label: 'Lucro acumulado',
+          data: lucrosAcum,
+          borderColor: 'rgba(124,108,250,0.9)',
+          backgroundColor: 'rgba(124,108,250,0.08)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(124,108,250,1)',
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y2',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#6b6b85', font: { size: 10 }, boxWidth: 12 } }
+      },
+      scales: {
+        x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: {
+          position: 'left',
+          ticks: { color: '#6b6b85', font: { size: 11 }, callback: v => 'R$' + v },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y2: {
+          position: 'right',
+          ticks: { color: 'rgba(124,108,250,0.7)', font: { size: 10 }, callback: v => 'R$' + v },
+          grid: { drawOnChartArea: false }
+        }
+      }
+    }
   });
 
   _chartApostas = new Chart(document.getElementById('chartApostas'), {
@@ -662,8 +751,9 @@ function renderApostasTabela() {
       const status  = String(r[10] || '').toLowerCase();
       const lucro   = toNum(r[11]);
       let badge = `<span class="badge badge-pend">Pendente</span>`;
-      if (status === 'green') badge = `<span class="badge badge-green">✓ Green</span>`;
-      if (status === 'red')   badge = `<span class="badge badge-red">✗ Red</span>`;
+      if (status === 'green')   badge = `<span class="badge badge-green">✓ Green</span>`;
+      if (status === 'red')     badge = `<span class="badge badge-red">✗ Red</span>`;
+      if (status === 'anulada') badge = `<span class="badge badge-anulada">— Anulada</span>`;
       const lc = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
       html += `<tr>
         <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td>
@@ -735,9 +825,9 @@ function atualizarDropdowns(rows) {
 
   html += `<div class="col-filtro-grupo">
     <div class="col-filtro-label">Odd Lançada</div>
-    <div class="col-filtro-odd">
+    <div class="col-filtro-odd-wrap">
       <input type="number" id="odd-min" placeholder="Min" step="0.01" min="1" value="${_colFiltros.oddMin}" oninput="onOddFiltro()">
-      <span style="color:var(--muted);font-size:0.75rem;">–</span>
+      <span style="color:var(--muted);font-size:0.75rem;text-align:center;">–</span>
       <input type="number" id="odd-max" placeholder="Max" step="0.01" min="1" value="${_colFiltros.oddMax}" oninput="onOddFiltro()">
     </div>
   </div>`;
