@@ -89,7 +89,7 @@
   /* SALDOS — grid com max 3 colunas para evitar layout quebrado */
   .saldos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, 220px);
     gap: 1rem;
     margin-bottom: 0.5rem;
   }
@@ -275,7 +275,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   }
 
   _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 1);
-  _saldosAllRows  = saldos.slice(2).filter(r => r[5] && String(r[5]).length > 1);
+  _saldosAllRows  = saldos.slice(3).filter(r => r[5] && String(r[5]).length > 1);
   _saldosPagina   = 0;
   _apostasPagina  = 0;
 
@@ -336,6 +336,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
           <span class="periodo-sep">até</span>
           <input type="date" id="dt-fim" title="Data fim">
           <button class="btn-periodo" onclick="filtrarPeriodo()">Filtrar período</button>
+          <button class="btn-periodo" id="btn-limpar-periodo" onclick="limparPeriodo()" style="display:none;border-color:var(--red);color:var(--red);">✕ Limpar</button>
         </div>
       </div>
     </div>
@@ -424,7 +425,15 @@ function filtrarPeriodo() {
     return true;
   }).slice().reverse();
   _apostasPagina = 0;
+  document.getElementById('btn-limpar-periodo').style.display = 'inline-block';
   renderApostasTabela();
+}
+
+function limparPeriodo() {
+  document.getElementById('dt-inicio').value = '';
+  document.getElementById('dt-fim').value = '';
+  document.getElementById('btn-limpar-periodo').style.display = 'none';
+  filtrarApostas('hoje', document.querySelector('.filtro-btn'));
 }
 
 // APOSTAS — FILTRO POR PERÍODO PRÉ-DEFINIDO
