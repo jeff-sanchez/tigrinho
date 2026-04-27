@@ -89,7 +89,7 @@
   /* SALDOS — grid com max 3 colunas para evitar layout quebrado */
   .saldos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 220px);
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1rem;
     margin-bottom: 0.5rem;
   }
@@ -255,7 +255,7 @@ let _saldosAllRows  = [];
 let _saldosPagina   = 0;
 let _apostasPagina  = 0;
 let _apostasFiltered = [];
-const SALDOS_POR_PAGINA  = 6;
+const SALDOS_POR_PAGINA  = 12;
 const APOSTAS_POR_PAGINA = 25;
 
 // RENDER PRINCIPAL
