@@ -128,6 +128,28 @@
   .btn-periodo { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; }
   .btn-periodo:hover { border-color: var(--accent); color: var(--text); }
 
+  /* FILTROS DE COLUNA */
+  .col-filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0.75rem; align-items: flex-end; }
+  .col-filtro-grupo { display: flex; flex-direction: column; gap: 3px; }
+  .col-filtro-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .col-filtro-select {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 0.78rem; padding: 0.3rem 0.6rem; outline: none;
+    cursor: pointer; min-width: 110px; transition: border-color 0.2s;
+  }
+  .col-filtro-select:focus { border-color: var(--accent); }
+  .col-filtro-select option { background: var(--surface2); }
+  .col-filtro-odd { display: flex; align-items: center; gap: 4px; }
+  .col-filtro-odd input[type="number"] {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 0.78rem; padding: 0.3rem 0.5rem; outline: none;
+    width: 64px; transition: border-color 0.2s;
+  }
+  .col-filtro-odd input[type="number"]:focus { border-color: var(--accent); }
+  .col-filtro-odd input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
+  .btn-limpar-cols { background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.72rem; padding: 0.3rem 0.65rem; transition: all 0.15s; align-self: flex-end; }
+  .btn-limpar-cols:hover { border-color: var(--red); color: var(--red); }
+
   /* NO DATA */
   .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
 
@@ -255,6 +277,7 @@ let _saldosAllRows  = [];
 let _saldosPagina   = 0;
 let _apostasPagina  = 0;
 let _apostasFiltered = [];
+let _colFiltros = { status: '', casa: '', grupo: '', esporte: '', oddMin: '', oddMax: '' };
 const SALDOS_POR_PAGINA  = 12;
 const APOSTAS_POR_PAGINA = 25;
 
@@ -356,12 +379,14 @@ function renderDashboard(overview, apostas, grupos, saldos) {
         </div>
       </div>
     </div>
+    <div class="col-filtros" id="col-filtros-wrap"></div>
     <div class="table-card"><div id="apostas-tabela"></div></div>
     <div class="paginacao" id="apostas-paginacao"></div>`;
 
   document.getElementById('content').innerHTML = html;
 
   renderSaldos();
+  _colFiltros = { status: '', casa: '', grupo: '', esporte: '', oddMin: '', oddMax: '' };
   filtrarApostas('hoje', document.querySelector('.filtro-btn.active'));
 
   // Salva meses para uso nos charts e inicializa granularidade padrão "mês"
@@ -563,15 +588,17 @@ function filtrarPeriodo() {
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
   const dIni = ini ? new Date(ini + 'T00:00:00') : null;
   const dFim = fim ? new Date(fim + 'T23:59:59') : null;
-  _apostasFiltered = _apostasAllRows.filter(r => {
+  const rowsPeriodo = _apostasAllRows.filter(r => {
     const d = parseData(r[1]);
     if (!d) return false;
     if (dIni && d < dIni) return false;
     if (dFim && d > dFim) return false;
     return true;
   }).slice().reverse();
+  _apostasFiltered = aplicarFiltrosColunas(rowsPeriodo);
   _apostasPagina = 0;
   document.getElementById('btn-limpar-periodo').style.display = 'inline-block';
+  atualizarDropdowns(_apostasFiltered);
   renderApostasTabela();
 }
 
@@ -602,8 +629,9 @@ function filtrarApostas(filtro, btn) {
       return (agora - d) / 86400000 <= filtro;
     });
   }
-  _apostasFiltered = [...rows].reverse();
+  _apostasFiltered = aplicarFiltrosColunas([...rows].reverse());
   _apostasPagina = 0;
+  atualizarDropdowns(_apostasFiltered);
   renderApostasTabela();
 }
 
@@ -656,6 +684,120 @@ function renderApostasTabela() {
   for (let i = 0; i < paginas; i++) pHtml += `<button class="pag-btn ${i===_apostasPagina?'active':''}" onclick="mudarPaginaApostas(${i},true)">${i+1}</button>`;
   pHtml += `<button class="pag-btn" onclick="mudarPaginaApostas(1)" ${_apostasPagina===paginas-1?'disabled':''}>Próximo ›</button></div>`;
   pag.innerHTML = pHtml;
+}
+
+// APOSTAS — FILTROS DE COLUNA
+function aplicarFiltrosColunas(rows) {
+  return rows.filter(r => {
+    const status  = String(r[10] || '').toLowerCase();
+    const casa    = String(r[3]  || '');
+    const grupo   = String(r[5]  || '');
+    const esporte = String(r[2]  || '');
+    const odd     = toNum(r[8]); // Odd Lançada
+
+    if (_colFiltros.status  && status  !== _colFiltros.status)  return false;
+    if (_colFiltros.casa    && casa    !== _colFiltros.casa)    return false;
+    if (_colFiltros.grupo   && grupo   !== _colFiltros.grupo)   return false;
+    if (_colFiltros.esporte && esporte !== _colFiltros.esporte) return false;
+    if (_colFiltros.oddMin  !== '' && odd < parseFloat(_colFiltros.oddMin)) return false;
+    if (_colFiltros.oddMax  !== '' && odd > parseFloat(_colFiltros.oddMax)) return false;
+    return true;
+  });
+}
+
+function atualizarDropdowns(rows) {
+  const wrap = document.getElementById('col-filtros-wrap');
+  if (!wrap) return;
+
+  // Coleta valores únicos do conjunto atual (antes dos filtros de coluna)
+  const unicos = (idx) => [...new Set(_apostasAllRows.map(r => String(r[idx] || '')).filter(v => v))].sort();
+  const statusOpts = ['green', 'red', ''];
+  const casaOpts   = unicos(3);
+  const grupoOpts  = unicos(5);
+  const esporteOpts= unicos(2);
+
+  const sel = (id, label, opts, valFn) => {
+    const cur = _colFiltros[id];
+    const optsHtml = ['', ...opts].map(v => {
+      const lab = id === 'status' && v === 'green' ? '✓ Green' : id === 'status' && v === 'red' ? '✗ Red' : v || 'Todos';
+      return `<option value="${v}" ${v === cur ? 'selected' : ''}>${lab}</option>`;
+    }).join('');
+    return `<div class="col-filtro-grupo">
+      <div class="col-filtro-label">${label}</div>
+      <select class="col-filtro-select" onchange="onColFiltro('${id}',this.value)">${optsHtml}</select>
+    </div>`;
+  };
+
+  let html = sel('status', 'Status', statusOpts)
+           + sel('esporte', 'Esporte', esporteOpts)
+           + sel('casa', 'Casa', casaOpts)
+           + sel('grupo', 'Grupo', grupoOpts);
+
+  html += `<div class="col-filtro-grupo">
+    <div class="col-filtro-label">Odd Lançada</div>
+    <div class="col-filtro-odd">
+      <input type="number" id="odd-min" placeholder="Min" step="0.01" min="1" value="${_colFiltros.oddMin}" oninput="onOddFiltro()">
+      <span style="color:var(--muted);font-size:0.75rem;">–</span>
+      <input type="number" id="odd-max" placeholder="Max" step="0.01" min="1" value="${_colFiltros.oddMax}" oninput="onOddFiltro()">
+    </div>
+  </div>`;
+
+  const temFiltro = Object.values(_colFiltros).some(v => v !== '');
+  if (temFiltro) html += `<button class="btn-limpar-cols" onclick="limparFiltrosColunas()">✕ Limpar filtros</button>`;
+
+  wrap.innerHTML = html;
+}
+
+function onColFiltro(campo, valor) {
+  _colFiltros[campo] = valor;
+  reaplicarFiltrosColunas();
+}
+
+function onOddFiltro() {
+  _colFiltros.oddMin = document.getElementById('odd-min')?.value || '';
+  _colFiltros.oddMax = document.getElementById('odd-max')?.value || '';
+  reaplicarFiltrosColunas();
+}
+
+function reaplicarFiltrosColunas() {
+  // Pega os rows já filtrados por período — repete a lógica do período ativo
+  const btnAtivo = document.querySelector('.filtro-btn.active');
+  const ini = document.getElementById('dt-inicio')?.value;
+  const fim = document.getElementById('dt-fim')?.value;
+  let base;
+  if (ini || fim) {
+    const dIni = ini ? new Date(ini + 'T00:00:00') : null;
+    const dFim = fim ? new Date(fim + 'T23:59:59') : null;
+    base = _apostasAllRows.filter(r => {
+      const d = parseData(r[1]);
+      if (!d) return false;
+      if (dIni && d < dIni) return false;
+      if (dFim && d > dFim) return false;
+      return true;
+    }).slice().reverse();
+  } else if (btnAtivo) {
+    const agora = new Date();
+    const filtro = btnAtivo.getAttribute('onclick').match(/filtrarApostas\(([^,)]+)/)?.[1];
+    if (!filtro || filtro === "'hoje'") {
+      base = _apostasAllRows.filter(r => { const d = parseData(r[1]); return d && isMesmaData(d, agora); }).slice().reverse();
+    } else if (filtro === '0') {
+      base = [..._apostasAllRows].reverse();
+    } else {
+      const dias = parseInt(filtro);
+      base = _apostasAllRows.filter(r => { const d = parseData(r[1]); return d && (agora-d)/86400000 <= dias; }).slice().reverse();
+    }
+  } else {
+    base = [..._apostasAllRows].reverse();
+  }
+  _apostasFiltered = aplicarFiltrosColunas(base);
+  _apostasPagina = 0;
+  atualizarDropdowns(_apostasFiltered);
+  renderApostasTabela();
+}
+
+function limparFiltrosColunas() {
+  _colFiltros = { status: '', casa: '', grupo: '', esporte: '', oddMin: '', oddMax: '' };
+  reaplicarFiltrosColunas();
 }
 
 function mudarPaginaApostas(val, absoluto) {
