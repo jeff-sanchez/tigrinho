@@ -290,10 +290,26 @@ function renderDashboard(overview, apostas, grupos, saldos) {
       <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div><div class="kpi-sub">ROI: ${fmtPct(roi)}</div></div>
       <div class="kpi"><div class="kpi-label">Total Apostado</div><div class="kpi-value neutral">${fmtBRL(totalApostado)}</div><div class="kpi-sub">${_apostasAllRows.length} apostas no total</div></div>
     </div>
-    <div class="section-title">Evolução mensal</div>
+    <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+      <span style="padding-top:2px;">Evolução</span>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+        <div class="filtro-tabs" id="evolucao-gran">
+          <button class="filtro-btn active" onclick="mudarGranularidade('dia',this)">Dia</button>
+          <button class="filtro-btn" onclick="mudarGranularidade('semana',this)">Semana</button>
+          <button class="filtro-btn active-hidden" onclick="mudarGranularidade('mes',this)">Mês</button>
+        </div>
+        <div class="periodo-wrap">
+          <input type="date" id="ev-inicio" title="Data início">
+          <span class="periodo-sep">até</span>
+          <input type="date" id="ev-fim" title="Data fim">
+          <button class="btn-periodo" onclick="filtrarEvolucao()">Filtrar período</button>
+          <button class="btn-periodo" id="btn-limpar-evolucao" onclick="limparEvolucao()" style="display:none;border-color:var(--red);color:var(--red);">✕ Limpar</button>
+        </div>
+      </div>
+    </div>
     <div class="chart-grid">
-      <div class="card"><div class="card-title">Lucro por mês (R$)</div><div class="chart-wrap"><canvas id="chartMensal"></canvas></div></div>
-      <div class="card"><div class="card-title">Apostas por mês</div><div class="chart-wrap"><canvas id="chartApostas"></canvas></div></div>
+      <div class="card"><div class="card-title" id="chart-lucro-title">Lucro (R$)</div><div class="chart-wrap"><canvas id="chartMensal"></canvas></div></div>
+      <div class="card"><div class="card-title" id="chart-apostas-title">Apostas</div><div class="chart-wrap"><canvas id="chartApostas"></canvas></div></div>
     </div>`;
 
   // Grupos segmentados
@@ -348,22 +364,152 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   renderSaldos();
   filtrarApostas('hoje', document.querySelector('.filtro-btn.active'));
 
-  // Charts
-  const mesesLabels  = meses.map(m => m.nome.substring(0,3));
-  const mesesLucros  = meses.map(m => m.lucro);
-  const mesesApostas = meses.map(m => m.apostas);
+  // Salva meses para uso nos charts e inicializa granularidade padrão "mês"
+  _mesesOverview = meses;
+  _granularidade = 'mes';
+  renderEvolucao();
+}
 
-  new Chart(document.getElementById('chartMensal'), {
+// ESTADO GLOBAL DOS GRÁFICOS
+let _mesesOverview  = [];
+let _granularidade  = 'mes'; // 'dia' | 'semana' | 'mes'
+let _evolucaoIni    = null;
+let _evolucaoFim    = null;
+let _chartLucro     = null;
+let _chartApostas   = null;
+
+// EVOLUÇÃO — MUDAR GRANULARIDADE
+function mudarGranularidade(gran, btn) {
+  document.querySelectorAll('#evolucao-gran .filtro-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  _granularidade = gran;
+  _evolucaoIni = null;
+  _evolucaoFim = null;
+  document.getElementById('ev-inicio').value = '';
+  document.getElementById('ev-fim').value = '';
+  document.getElementById('btn-limpar-evolucao').style.display = 'none';
+  renderEvolucao();
+}
+
+// EVOLUÇÃO — FILTRO DE PERÍODO PERSONALIZADO
+function filtrarEvolucao() {
+  const ini = document.getElementById('ev-inicio').value;
+  const fim = document.getElementById('ev-fim').value;
+  if (!ini && !fim) return;
+  _evolucaoIni = ini ? new Date(ini + 'T00:00:00') : null;
+  _evolucaoFim = fim ? new Date(fim + 'T23:59:59') : null;
+  document.getElementById('btn-limpar-evolucao').style.display = 'inline-block';
+  renderEvolucao();
+}
+
+function limparEvolucao() {
+  _evolucaoIni = null;
+  _evolucaoFim = null;
+  document.getElementById('ev-inicio').value = '';
+  document.getElementById('ev-fim').value = '';
+  document.getElementById('btn-limpar-evolucao').style.display = 'none';
+  renderEvolucao();
+}
+
+// EVOLUÇÃO — RENDER DOS GRÁFICOS
+function renderEvolucao() {
+  let labels = [], lucros = [], qtds = [];
+
+  if (_granularidade === 'mes') {
+    // Usa dados do Overview (já agregados por mês)
+    let fonte = _mesesOverview;
+    if (_evolucaoIni || _evolucaoFim) {
+      fonte = fonte.filter((m, i) => {
+        const ano = new Date().getFullYear();
+        const d = new Date(ano, i, 1);
+        if (_evolucaoIni && d < new Date(_evolucaoIni.getFullYear(), _evolucaoIni.getMonth(), 1)) return false;
+        if (_evolucaoFim && d > new Date(_evolucaoFim.getFullYear(), _evolucaoFim.getMonth() + 1, 0)) return false;
+        return true;
+      });
+    }
+    labels  = fonte.map(m => m.nome.substring(0,3));
+    lucros  = fonte.map(m => m.lucro);
+    qtds    = fonte.map(m => m.apostas);
+    document.getElementById('chart-lucro-title').textContent   = 'Lucro por mês (R$)';
+    document.getElementById('chart-apostas-title').textContent = 'Apostas por mês';
+
+  } else {
+    // Usa dados brutos da aba Apostas, agrupados por dia ou semana
+    let rows = _apostasAllRows.filter(r => {
+      const d = parseData(r[1]);
+      if (!d) return false;
+      if (_evolucaoIni && d < _evolucaoIni) return false;
+      if (_evolucaoFim && d > _evolucaoFim) return false;
+      return true;
+    });
+
+    // Define período padrão se não houver filtro
+    if (!_evolucaoIni && !_evolucaoFim) {
+      const agora = new Date();
+      const diasPadrao = _granularidade === 'dia' ? 15 : 84; // 15 dias ou 12 semanas
+      const limiteInicio = new Date(agora - diasPadrao * 86400000);
+      rows = _apostasAllRows.filter(r => {
+        const d = parseData(r[1]);
+        return d && d >= limiteInicio;
+      });
+    }
+
+    const mapa = {};
+    rows.forEach(r => {
+      const d = parseData(r[1]);
+      if (!d) return;
+      let chave;
+      if (_granularidade === 'dia') {
+        chave = d.toLocaleDateString('pt-BR');
+      } else {
+        // Semana: usa segunda-feira da semana
+        const seg = new Date(d);
+        const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
+        seg.setDate(d.getDate() - dow);
+        chave = seg.toLocaleDateString('pt-BR');
+      }
+      if (!mapa[chave]) mapa[chave] = { lucro: 0, qtd: 0 };
+      mapa[chave].lucro += toNum(r[11]);
+      mapa[chave].qtd   += 1;
+    });
+
+    const chaves = Object.keys(mapa).sort((a, b) => {
+      const pa = a.split('/'), pb = b.split('/');
+      return new Date(pa[2], pa[1]-1, pa[0]) - new Date(pb[2], pb[1]-1, pb[0]);
+    });
+
+    labels = chaves;
+    lucros = chaves.map(k => mapa[k].lucro);
+    qtds   = chaves.map(k => mapa[k].qtd);
+
+    const titulo = _granularidade === 'dia' ? 'dia' : 'semana';
+    document.getElementById('chart-lucro-title').textContent   = `Lucro por ${titulo} (R$)`;
+    document.getElementById('chart-apostas-title').textContent = `Apostas por ${titulo}`;
+  }
+
+  const optBase = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+    }
+  };
+
+  // Destrói charts anteriores para evitar conflito
+  if (_chartLucro)   { _chartLucro.destroy();   _chartLucro = null; }
+  if (_chartApostas) { _chartApostas.destroy(); _chartApostas = null; }
+
+  _chartLucro = new Chart(document.getElementById('chartMensal'), {
     type: 'bar',
-    data: { labels: mesesLabels, datasets: [{ data: mesesLucros, backgroundColor: mesesLucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'), borderRadius: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#6b6b85', font: { size: 11 }, callback: v => 'R$' + v }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
+    data: { labels, datasets: [{ data: lucros, backgroundColor: lucros.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)'), borderRadius: 6 }] },
+    options: { ...optBase, scales: { ...optBase.scales, y: { ...optBase.scales.y, ticks: { ...optBase.scales.y.ticks, callback: v => 'R$' + v } } } }
   });
-  new Chart(document.getElementById('chartApostas'), {
+
+  _chartApostas = new Chart(document.getElementById('chartApostas'), {
     type: 'bar',
-    data: { labels: mesesLabels, datasets: [{ data: mesesApostas, backgroundColor: 'rgba(124,108,250,0.6)', borderRadius: 6 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#6b6b85', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
+    data: { labels, datasets: [{ data: qtds, backgroundColor: 'rgba(124,108,250,0.6)', borderRadius: 6 }] },
+    options: optBase
   });
 }
 
