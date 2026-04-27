@@ -785,7 +785,11 @@ function aplicarFiltrosColunas(rows) {
     const esporte = String(r[2]  || '');
     const odd     = toNum(r[8]); // Odd Lançada
 
-    if (_colFiltros.status  && status  !== _colFiltros.status)  return false;
+    if (_colFiltros.status) {
+      const ePendente = _colFiltros.status === 'pendente';
+      if (ePendente && status !== '') return false;
+      if (!ePendente && status !== _colFiltros.status) return false;
+    }
     if (_colFiltros.casa    && casa    !== _colFiltros.casa)    return false;
     if (_colFiltros.grupo   && grupo   !== _colFiltros.grupo)   return false;
     if (_colFiltros.esporte && esporte !== _colFiltros.esporte) return false;
@@ -801,7 +805,7 @@ function atualizarDropdowns(rows) {
 
   // Coleta valores únicos do conjunto atual (antes dos filtros de coluna)
   const unicos = (idx) => [...new Set(_apostasAllRows.map(r => String(r[idx] || '')).filter(v => v))].sort();
-  const statusOpts = ['green', 'red', ''];
+  const statusOpts = ['', 'green', 'red', 'anulada', 'pendente'];
   const casaOpts   = unicos(3);
   const grupoOpts  = unicos(5);
   const esporteOpts= unicos(2);
@@ -809,7 +813,9 @@ function atualizarDropdowns(rows) {
   const sel = (id, label, opts, valFn) => {
     const cur = _colFiltros[id];
     const optsHtml = ['', ...opts].map(v => {
-      const lab = id === 'status' && v === 'green' ? '✓ Green' : id === 'status' && v === 'red' ? '✗ Red' : v || 'Todos';
+      const lab = id === 'status'
+               ? (v === '' ? 'Todos' : v === 'green' ? '✓ Green' : v === 'red' ? '✗ Red' : v === 'anulada' ? '— Anulada' : v === 'pendente' ? '⏳ Pendente' : v)
+               : (v || 'Todos');
       return `<option value="${v}" ${v === cur ? 'selected' : ''}>${lab}</option>`;
     }).join('');
     return `<div class="col-filtro-grupo">
