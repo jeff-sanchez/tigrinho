@@ -169,7 +169,44 @@
   .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
 
   /* MOBILE */
-  @media (max-width: 600px) { header { padding: 1rem; } main { padding: 1rem; } .kpi-value { font-size: 1.3rem; } }
+  @media (max-width: 600px) {
+    header { padding: 1rem; }
+    main { padding: 1rem; }
+    .kpi-value { font-size: 1.3rem; }
+
+    /* Filtros de apostas — alinha à direita e empilha */
+    .apostas-filtros-wrap { align-items: flex-end !important; }
+    .filtro-tabs { display: none; } /* esconde botões no mobile */
+    .filtro-select-mobile { display: block !important; } /* mostra dropdown */
+    .periodo-wrap { flex-wrap: wrap; justify-content: flex-end; }
+    .periodo-wrap input[type="date"] { width: 130px; }
+    .btn-periodo { font-size: 0.72rem; }
+
+    /* Filtros de coluna */
+    .col-filtros { justify-content: flex-end; }
+    .col-filtro-select { min-width: 100px; font-size: 0.75rem; }
+    .col-filtro-odd input[type="number"] {
+      width: 60px;
+      min-height: 32px;
+      font-size: 0.75rem;
+    }
+    .col-filtro-label { font-size: 0.62rem; }
+  }
+
+  /* Dropdown mobile para período (escondido no desktop) */
+  .filtro-select-mobile {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.78rem;
+    padding: 0.3rem 0.6rem;
+    outline: none;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .filtro-select-mobile option { background: var(--surface2); }
 </style>
 </head>
 <body>
@@ -403,7 +440,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   html += `
     <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
       <span style="padding-top:2px;">Apostas recentes</span>
-      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+      <div class="apostas-filtros-wrap" style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
         <div class="filtro-tabs">
           <button class="filtro-btn active" onclick="filtrarApostas('hoje',this)">Hoje</button>
           <button class="filtro-btn" onclick="filtrarApostas(3,this)">3 dias</button>
@@ -413,6 +450,15 @@ function renderDashboard(overview, apostas, grupos, saldos) {
           <button class="filtro-btn" onclick="filtrarApostas(90,this)">90 dias</button>
           <button class="filtro-btn" onclick="filtrarApostas(0,this)">Todas</button>
         </div>
+        <select class="filtro-select-mobile" onchange="filtrarApostasMobile(this.value)">
+          <option value="hoje">Hoje</option>
+          <option value="3">3 dias</option>
+          <option value="7">7 dias</option>
+          <option value="15">15 dias</option>
+          <option value="30">30 dias</option>
+          <option value="90">90 dias</option>
+          <option value="0">Todas</option>
+        </select>
         <div class="periodo-wrap">
           <input type="date" id="dt-inicio" title="Data início">
           <span class="periodo-sep">até</span>
@@ -832,9 +878,9 @@ function atualizarDropdowns(rows) {
   html += `<div class="col-filtro-grupo">
     <div class="col-filtro-label">Odd Lançada</div>
     <div class="col-filtro-odd-wrap">
-      <input type="number" id="odd-min" placeholder="Min" step="0.01" min="1" value="${_colFiltros.oddMin}" oninput="onOddFiltro()">
+      <input type="number" id="odd-min" placeholder="Min" step="0.01" min="1" style="min-height:32px;" value="${_colFiltros.oddMin}" oninput="onOddFiltro()">
       <span style="color:var(--muted);font-size:0.75rem;text-align:center;">–</span>
-      <input type="number" id="odd-max" placeholder="Max" step="0.01" min="1" value="${_colFiltros.oddMax}" oninput="onOddFiltro()">
+      <input type="number" id="odd-max" placeholder="Max" step="0.01" min="1" style="min-height:32px;" value="${_colFiltros.oddMax}" oninput="onOddFiltro()">
     </div>
   </div>`;
 
@@ -889,6 +935,14 @@ function reaplicarFiltrosColunas() {
   _apostasPagina = 0;
   atualizarDropdowns(_apostasFiltered);
   renderApostasTabela();
+}
+
+function filtrarApostasMobile(val) {
+  const v = val === 'hoje' ? 'hoje' : parseInt(val);
+  filtrarApostas(v, null);
+  // Atualiza o select para refletir a seleção
+  const sel = document.querySelector('.filtro-select-mobile');
+  if (sel) sel.value = val;
 }
 
 function limparFiltrosColunas() {
