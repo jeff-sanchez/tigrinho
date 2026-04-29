@@ -94,6 +94,23 @@
     gap: 1rem;
     margin-bottom: 0.5rem;
   }
+  @media (max-width: 600px) {
+    .saldos-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      gap: 0.75rem;
+      padding-bottom: 0.5rem;
+      /* Mostra parte do próximo card para indicar que há mais */
+    }
+    .saldo-card {
+      flex: 0 0 75vw;
+      max-width: 280px;
+      scroll-snap-align: start;
+    }
+  }
   .saldo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .saldo-casa { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
   .saldo-row  { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem; color: var(--muted); }
@@ -112,6 +129,7 @@
   /* FILTRO */
   .filtro-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .filtro-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .evolucao-gran-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
   .filtro-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.75rem; transition: all 0.15s; white-space: nowrap; }
   .filtro-btn:hover { border-color: var(--accent); color: var(--text); }
   .filtro-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -176,7 +194,8 @@
 
     /* Filtros de apostas — alinha à direita e empilha */
     .apostas-filtros-wrap { align-items: flex-end !important; }
-    .filtro-tabs { display: none; } /* esconde botões no mobile */
+    .filtro-tabs { display: none; } /* esconde botões de período no mobile */
+    .evolucao-gran-tabs { display: flex; } /* granularidade sempre visível */
     .filtro-select-mobile { display: block !important; } /* mostra dropdown */
     .periodo-wrap { flex-wrap: wrap; justify-content: flex-end; }
     .periodo-wrap input[type="date"] { width: 130px; }
@@ -396,10 +415,10 @@ function renderDashboard(overview, apostas, grupos, saldos) {
     <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
       <span style="padding-top:2px;">Evolução</span>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-        <div class="filtro-tabs" id="evolucao-gran">
+        <div class="evolucao-gran-tabs" id="evolucao-gran">
           <button class="filtro-btn active" onclick="mudarGranularidade('dia',this)">Dia</button>
           <button class="filtro-btn" onclick="mudarGranularidade('semana',this)">Semana</button>
-          <button class="filtro-btn active-hidden" onclick="mudarGranularidade('mes',this)">Mês</button>
+          <button class="filtro-btn" onclick="mudarGranularidade('mes',this)">Mês</button>
         </div>
         <div class="periodo-wrap">
           <input type="date" id="ev-inicio" title="Data início">
@@ -480,13 +499,13 @@ function renderDashboard(overview, apostas, grupos, saldos) {
 
   // Salva meses para uso nos charts e inicializa granularidade padrão "mês"
   _mesesOverview = meses;
-  _granularidade = 'mes';
+  _granularidade = 'dia';
   renderEvolucao();
 }
 
 // ESTADO GLOBAL DOS GRÁFICOS
 let _mesesOverview  = [];
-let _granularidade  = 'mes'; // 'dia' | 'semana' | 'mes'
+let _granularidade  = 'dia'; // 'dia' | 'semana' | 'mes'
 let _evolucaoIni    = null;
 let _evolucaoFim    = null;
 let _chartLucro     = null;
@@ -779,12 +798,12 @@ function renderApostasTabela() {
   const exibir  = _apostasFiltered.slice(inicio, fim);
 
   let html = `<table><thead><tr>
-    <th>Data</th><th>Esporte</th><th>Casa</th><th>Grupo</th>
+    <th>Data</th><th>Esporte</th><th>Casa</th><th>Grupo</th><th>Aposta</th>
     <th>Odd</th><th>Valor</th><th>Status</th><th>Lucro</th>
   </tr></thead><tbody>`;
 
   if (exibir.length === 0) {
-    html += `<tr><td colspan="8" class="no-data">Nenhuma aposta neste período.</td></tr>`;
+    html += `<tr><td colspan="9" class="no-data">Nenhuma aposta neste período.</td></tr>`;
   } else {
     exibir.forEach(r => {
       const d       = parseData(r[1]);
@@ -802,7 +821,7 @@ function renderApostasTabela() {
       if (status === 'anulada') badge = `<span class="badge badge-anulada">— Anulada</span>`;
       const lc = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
       html += `<tr>
-        <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td>
+        <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td><td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r[4]||''}">${r[4]||'—'}</td>
         <td>${odd}</td><td>${fmtBRL(valor)}</td><td>${badge}</td>
         <td class="${lc}">${lucro !== 0 ? fmtBRL(lucro) : '—'}</td>
       </tr>`;
