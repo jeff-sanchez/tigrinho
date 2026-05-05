@@ -381,12 +381,13 @@ const APOSTAS_POR_PAGINA = 25;
 
 // RENDER PRINCIPAL
 function renderDashboard(overview, apostas, grupos, saldos) {
-  const bancaInicial  = toNum(overview[0]?.[1]);
-  const unidade       = toNum(overview[0]?.[3]);
-  const totalApostado = toNum(overview[1]?.[1]);
-  const lucroTotal    = toNum(overview[1]?.[3]);
-  const bancaAtual    = toNum(overview[2]?.[1]);
-  const roi           = toNum(overview[2]?.[3]);
+  const bancaInicial     = toNum(overview[0]?.[1]); // B1 = 500
+  const bancaOperacional = toNum(overview[0]?.[3]); // D1 = 1000
+  const unidade          = toNum(overview[0]?.[5]); // F1 = D1/100
+  const totalApostado    = toNum(overview[1]?.[1]); // B2
+  const lucroTotal       = toNum(overview[1]?.[3]); // D2
+  const roi              = toNum(overview[1]?.[5]); // F2
+  const bancaAtual       = toNum(overview[2]?.[1]); // B3 = D1+D2
 
   const meses = [];
   for (let i = 5; i <= 16; i++) {
@@ -419,19 +420,22 @@ function renderDashboard(overview, apostas, grupos, saldos) {
       <div class="kpi">
         <div class="kpi-label">Banca Inicial</div>
         <div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div>
+        <div class="kpi-sub">Histórico de origem</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Banca Operacional</div>
+        <div class="kpi-value neutral">${fmtBRL(bancaOperacional)}</div>
         <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Banca Atual</div>
         <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
-        <div class="kpi-sub">${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
-        <div class="kpi-progress ${progClass}">${progLabel}</div>
+        <div class="kpi-sub">${bancaAtual >= bancaOperacional ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaOperacional))} vs operacional</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Lucro Total</div>
         <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
         <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
-        <div class="kpi-progress ${roiClass}">${roiSinal}${(roi*100).toFixed(1)}% sobre o apostado</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Total Apostado</div>
