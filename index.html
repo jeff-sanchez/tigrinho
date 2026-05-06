@@ -446,30 +446,32 @@ function renderDashboard(overview, apostas, grupos, saldos) {
         <div class="kpi-sub">Histórico de origem</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Banca Operacional</div>
-        <div class="kpi-value neutral">${fmtBRL(bancaOperacional)}</div>
-        <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
-      </div>
-      <div class="kpi">
         <div class="kpi-label">Banca Atual</div>
         <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
         <div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Lucro Total</div>
-        <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
-        <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Total Apostado</div>
-        <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
-        <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
       </div>
       <div class="kpi kpi-destaque">
         <div class="kpi-label">💰 Capital de Giro</div>
         <div class="kpi-value ${saldoBanco > 0 ? 'positive' : 'negative'}">${fmtBRL(saldoBanco)}</div>
         <div class="kpi-sub">Disponível no banco para aportar</div>
       </div>
+            <div class="kpi">
+        <div class="kpi-label">Banca Operacional</div>
+        <div class="kpi-value neutral">${fmtBRL(bancaOperacional)}</div>
+        <div class="kpi-sub">Unidade: ${fmtBRL(unidade)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Lucro Total</div>
+        <div class="kpi-value ${lucroColor}">${fmtBRL(lucroTotal)}</div>
+        <div class="kpi-sub">ROI: ${fmtPct(roi)}</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-label">Total Apostado</div>
+        <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
+        <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
+      </div>
+      
     </div>
     <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
       <span style="padding-top:2px;">Evolução</span>
