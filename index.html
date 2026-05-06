@@ -49,6 +49,11 @@
 
   /* KPIs */
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi-grid-2rows { grid-template-columns: repeat(3, 1fr); }
+  .kpi-destaque { border-color: rgba(124,108,250,0.3); background: linear-gradient(135deg, rgba(124,108,250,0.08), var(--surface)); }
+  @media (max-width: 700px) { .kpi-grid-2rows { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 400px) { .kpi-grid-2rows { grid-template-columns: 1fr; } }
+  .kpi-destaque { border-color: rgba(124,108,250,0.3); background: linear-gradient(135deg, rgba(124,108,250,0.08), var(--surface)); }
   .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
   .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
   .kpi-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
@@ -434,7 +439,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   const roiSinal   = roi > 0 ? '+' : '';
 
   let html = `
-    <div class="kpi-grid">
+    <div class="kpi-grid kpi-grid-2rows">
       <div class="kpi">
         <div class="kpi-label">Banca Inicial</div>
         <div class="kpi-value neutral">${fmtBRL(bancaInicial)}</div>
@@ -459,6 +464,11 @@ function renderDashboard(overview, apostas, grupos, saldos) {
         <div class="kpi-label">Total Apostado</div>
         <div class="kpi-value neutral">${fmtBRL(totalApostado)}</div>
         <div class="kpi-sub">${_apostasAllRows.length} apostas no total</div>
+      </div>
+      <div class="kpi kpi-destaque">
+        <div class="kpi-label">💰 Capital de Giro</div>
+        <div class="kpi-value ${saldoBanco > 0 ? 'positive' : 'negative'}">${fmtBRL(saldoBanco)}</div>
+        <div class="kpi-sub">Disponível no banco para aportar</div>
       </div>
     </div>
     <div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
@@ -512,7 +522,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   }
 
   // Saldos
-  html += `<div class="section-title">Saldos por casa</div><div id="saldos-container"></div><div class="paginacao" id="saldos-paginacao"></div>`;
+  html += `<div class="section-title">Saldos por casa</div><div id="saldo-banco-box"></div><div id="saldos-container"></div><div class="paginacao" id="saldos-paginacao"></div>`;
 
   // Apostas — header com filtros e período personalizado
   html += `
@@ -553,16 +563,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   document.getElementById('content').innerHTML = html;
 
   renderSaldos();
-  // Box saldo banco
-  const sbEl = document.getElementById('saldo-banco-box');
-  if (sbEl) {
-    const cl = saldoBanco >= 0 ? 'positive' : 'negative';
-    sbEl.innerHTML = `<div class="saldo-banco-card">
-      <div class="saldo-banco-label">💰 Saldo disponível no banco</div>
-      <div class="saldo-banco-valor ${cl}">${fmtBRL(saldoBanco)}</div>
-      <div class="saldo-banco-sub">Capital disponível para aportar nas casas</div>
-    </div>`;
-  }
+
   _colFiltros = { status: '', casa: '', grupo: '', esporte: '', oddMin: '', oddMax: '' };
   filtrarApostas('hoje', document.querySelector('.filtro-btn.active'));
 
@@ -803,7 +804,7 @@ function renderSaldos() {
     const sac   = toNum(r[7]);
     const lucro = toNum(r[8]);
     const saldo = toNum(r[9]);
-    const cl    = saldo >= 0 ? 'positive' : 'negative';
+    const cl    = saldo > 0 ? 'positive' : 'negative';
     html += `<div class="saldo-card">
       <div class="saldo-casa">${r[5]}</div>
       <div class="saldo-row"><span>Depositado</span><span>${fmtBRL(dep)}</span></div>
