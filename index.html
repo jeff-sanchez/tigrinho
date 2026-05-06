@@ -209,6 +209,22 @@
   .kpi-progress.down { color: var(--red); }
   .kpi-progress.flat { color: var(--muted); }
 
+  /* SALDO BANCO */
+  .saldo-banco-card {
+    background: linear-gradient(135deg, rgba(124,108,250,0.12), rgba(124,108,250,0.05));
+    border: 1px solid rgba(124,108,250,0.3);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .saldo-banco-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+  .saldo-banco-valor { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; }
+  .saldo-banco-sub { font-size: 0.7rem; color: var(--muted); margin-left: auto; font-style: italic; }
+
   /* NO DATA */
   .no-data { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
 
@@ -398,6 +414,8 @@ function renderDashboard(overview, apostas, grupos, saldos) {
 
   _apostasAllRows = apostas.slice(1).filter(r => r[1] && String(r[1]).length > 1);
   _saldosAllRows  = saldos.slice(3).filter(r => r[5] && String(r[5]).length > 1);
+  // Saldo banco — linha 2 (índice 1), coluna L (índice 11)
+  const saldoBanco = toNum(saldos[1]?.[11]);
   _saldosPagina   = 0;
   _apostasPagina  = 0;
 
@@ -430,7 +448,7 @@ function renderDashboard(overview, apostas, grupos, saldos) {
       <div class="kpi">
         <div class="kpi-label">Banca Atual</div>
         <div class="kpi-value ${lucroColor}">${fmtBRL(bancaAtual)}</div>
-        <div class="kpi-sub">${bancaAtual >= bancaOperacional ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaOperacional))} vs operacional</div>
+        <div class="kpi-sub">${bancaAtual >= bancaInicial ? '▲' : '▼'} ${fmtBRL(Math.abs(bancaAtual - bancaInicial))} vs inicial</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Lucro Total</div>
@@ -535,6 +553,16 @@ function renderDashboard(overview, apostas, grupos, saldos) {
   document.getElementById('content').innerHTML = html;
 
   renderSaldos();
+  // Box saldo banco
+  const sbEl = document.getElementById('saldo-banco-box');
+  if (sbEl) {
+    const cl = saldoBanco >= 0 ? 'positive' : 'negative';
+    sbEl.innerHTML = `<div class="saldo-banco-card">
+      <div class="saldo-banco-label">💰 Saldo disponível no banco</div>
+      <div class="saldo-banco-valor ${cl}">${fmtBRL(saldoBanco)}</div>
+      <div class="saldo-banco-sub">Capital disponível para aportar nas casas</div>
+    </div>`;
+  }
   _colFiltros = { status: '', casa: '', grupo: '', esporte: '', oddMin: '', oddMax: '' };
   filtrarApostas('hoje', document.querySelector('.filtro-btn.active'));
 
