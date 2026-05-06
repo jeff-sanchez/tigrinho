@@ -916,7 +916,7 @@ function renderApostasTabela() {
       let badge = `<span class="badge badge-pend">Pendente</span>`;
       if (status === 'green')   badge = `<span class="badge badge-green">✓ Green</span>`;
       if (status === 'red')     badge = `<span class="badge badge-red">✗ Red</span>`;
-      if (status === 'anulada') badge = `<span class="badge badge-anulada">— Anulada</span>`;
+      if (status === 'anulada') badge = `<span class="badge badge-anulada">- Anulada</span>`;
       const lc = lucro > 0 ? 'positive' : lucro < 0 ? 'negative' : '';
       html += `<tr>
         <td>${data}</td><td>${esporte}</td><td>${casa}</td><td>${grupo}</td><td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r[4]||''}">${r[4]||'—'}</td>
